@@ -137,7 +137,10 @@ class _LyraSettingsState extends ConsumerState<LyraSettings> {
               textInputAction: TextInputAction.done,
             ),
             if (certificateNote != null)
-              Text(certificateNote, style: TextStyle(fontSize: 13, color: muted)),
+              Text(
+                certificateNote,
+                style: TextStyle(fontSize: 13, color: muted),
+              ),
             if (_message case final message?)
               Text(
                 message,
@@ -169,7 +172,9 @@ class _LyraSettingsState extends ConsumerState<LyraSettings> {
                     label: const Text('Request music'),
                   ),
                   TextButton.icon(
-                    onPressed: _busy ? null : () => unawaited(_remove(serverId)),
+                    onPressed: _busy
+                        ? null
+                        : () => unawaited(_remove(serverId)),
                     style: _buttonStyle,
                     icon: const Icon(Icons.delete_outline),
                     label: const Text('Remove'),

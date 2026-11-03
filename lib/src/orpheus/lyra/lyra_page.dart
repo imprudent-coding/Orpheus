@@ -304,8 +304,7 @@ class _SearchTabState extends ConsumerState<_SearchTab>
                         ),
                       );
                     }
-                    final result =
-                        results[index - (_message == null ? 0 : 1)];
+                    final result = results[index - (_message == null ? 0 : 1)];
                     return _ResultTile(
                       result: result,
                       artwork: _artworkFor(result),
@@ -537,7 +536,11 @@ class _Message extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           spacing: 8,
           children: [
-            Text(text, textAlign: TextAlign.center, style: TextStyle(color: muted)),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: muted),
+            ),
             if (onRetry != null)
               TextButton(onPressed: onRetry, child: const Text('Try again')),
           ],

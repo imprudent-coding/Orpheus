@@ -71,7 +71,9 @@ Map<String, Object?> _request(String id, String status) => {
   'started_at': null,
   'finished_at': status == 'completed' ? 1700000100 : null,
   'next_allowed_at': null,
-  'error': status == 'failed' ? 'Streamrip could not complete the download' : null,
+  'error': status == 'failed'
+      ? 'Streamrip could not complete the download'
+      : null,
 };
 
 void main() {
@@ -173,7 +175,10 @@ void main() {
       expect(request.id, 'dl_1');
       expect(request.status, LyraRequestStatus.queued);
       expect(request.queuePosition, 1);
-      expect(request.createdAt, DateTime.fromMillisecondsSinceEpoch(1700000000500));
+      expect(
+        request.createdAt,
+        DateTime.fromMillisecondsSinceEpoch(1700000000500),
+      );
 
       expect(lyra.received[0].$3, {
         'query': 'kid a',
@@ -312,7 +317,10 @@ void main() {
         container.read(lyraUrlProvider),
         Uri.parse('https://lyra.example.com/'),
       );
-      expect(container.read(lyraClientProvider)?.baseUrl.host, 'lyra.example.com');
+      expect(
+        container.read(lyraClientProvider)?.baseUrl.host,
+        'lyra.example.com',
+      );
 
       await container
           .read(lyraUrlsProvider.notifier)
@@ -346,7 +354,10 @@ void main() {
 
       final notifier = container.read(lyraUrlsProvider.notifier);
       await notifier.set('server-1', Uri.parse('https://lyra.example.com'));
-      expect(proxy.contextFor('lyra.example.com', 443, pinned: false), isNotNull);
+      expect(
+        proxy.contextFor('lyra.example.com', 443, pinned: false),
+        isNotNull,
+      );
       // Another server's Lyra gets no certificate it does not have.
       await notifier.set('server-2', Uri.parse('https://other.example.com'));
       expect(proxy.contextFor('other.example.com', 443, pinned: false), isNull);

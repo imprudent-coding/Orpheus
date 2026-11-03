@@ -165,21 +165,30 @@ void main() {
       );
     });
 
-    test('- applies attached URLs once the connection has a certificate', () async {
-      proxy.attachUrls('server-2', ['https://lyra.example.test']);
-      expect(proxy.contextFor('lyra.example.test', 443, pinned: false), isNull);
-      await proxy.install(
-        'server-2',
-        certificate: Fixtures.client(),
-        serverUrls: ['https://jellyfin.example.test'],
-      );
-      expect(
-        proxy.contextFor('lyra.example.test', 443, pinned: false),
-        isNotNull,
-      );
-      await proxy.remove('server-2');
-      expect(proxy.contextFor('lyra.example.test', 443, pinned: false), isNull);
-    });
+    test(
+      '- applies attached URLs once the connection has a certificate',
+      () async {
+        proxy.attachUrls('server-2', ['https://lyra.example.test']);
+        expect(
+          proxy.contextFor('lyra.example.test', 443, pinned: false),
+          isNull,
+        );
+        await proxy.install(
+          'server-2',
+          certificate: Fixtures.client(),
+          serverUrls: ['https://jellyfin.example.test'],
+        );
+        expect(
+          proxy.contextFor('lyra.example.test', 443, pinned: false),
+          isNotNull,
+        );
+        await proxy.remove('server-2');
+        expect(
+          proxy.contextFor('lyra.example.test', 443, pinned: false),
+          isNull,
+        );
+      },
+    );
   });
 
   group('forwarding', () {

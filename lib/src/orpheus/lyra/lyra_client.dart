@@ -187,7 +187,6 @@ class LyraClient {
               // Lyra's search runs Streamrip with a 30 second limit.
               receiveTimeout: const Duration(seconds: 45),
               contentType: Headers.jsonContentType,
-              responseType: ResponseType.json,
             ),
           );
 
@@ -309,7 +308,10 @@ class LyraClient {
       );
     }
     if (status != null) {
-      return LyraException('Lyra answered with HTTP $status.', statusCode: status);
+      return LyraException(
+        'Lyra answered with HTTP $status.',
+        statusCode: status,
+      );
     }
     return switch (error.type) {
       DioExceptionType.connectionTimeout ||

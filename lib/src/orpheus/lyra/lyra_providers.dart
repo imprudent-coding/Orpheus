@@ -7,6 +7,7 @@ import 'package:jplayer/src/data/providers/shared_preferences_provider.dart';
 import 'package:jplayer/src/orpheus/lyra/lyra_client.dart';
 import 'package:jplayer/src/providers/current_server_id_provider.dart';
 import 'package:mtls_proxy/mtls_proxy.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Lyra addresses by server account ID.
 final lyraUrlsProvider = NotifierProvider<LyraUrlsNotifier, Map<String, Uri>>(
@@ -27,7 +28,9 @@ class LyraUrlsNotifier extends Notifier<Map<String, Uri>> {
   Future<void> set(String serverId, Uri? url) async {
     // Start from what is stored, not from state: before the preferences have
     // loaded, state is still empty.
-    final prefs = await ref.read(sharedPreferencesProvider.future);
+    // Not through ref: this may run while the notifier waits to rebuild
+    // (right after the preferences loaded), when ref must not be used.
+    final prefs = await SharedPreferences.getInstance();
     final next = {...decode(prefs.getString(prefsKey))};
     if (url == null) {
       next.remove(serverId);
@@ -51,8 +54,7 @@ class LyraUrlsNotifier extends Notifier<Map<String, Uri>> {
       if (json is! Map<String, dynamic>) return const {};
       return Map.unmodifiable({
         for (final MapEntry(:key, :value) in json.entries)
-          if (value is String)
-            if (parseLyraUrl(value) case final url?) key: url,
+          if (value is String) key: ?parseLyraUrl(value),
       });
     } on FormatException {
       return const {};
@@ -74,30 +76,32 @@ final lyraClientProvider = Provider<LyraClient?>((ref) {
 });
 
 /// What the current Lyra offers (sources, search types, artist downloads).
-final lyraInfoProvider = FutureProvider.autoDispose<LyraInfo>((ref) {
-  final client = ref.watch(lyraClientProvider);
-  if (client == null) throw const LyraException('No Lyra address is set.');
-  return client.info();
-});
+final AutoDisposeFutureProvider<LyraInfo> lyraInfoProvider =
+    FutureProvider.autoDispose<LyraInfo>((ref) {
+      final client = ref.watch(lyraClientProvider);
+      if (client == null) throw const LyraException('No Lyra address is set.');
+      return client.info();
+    });
 
 /// How often the request list refreshes while it is shown.
 const lyraPollInterval = Duration(seconds: 5);
 
 /// Lyra's queue, refreshed every [lyraPollInterval] while anything watches
 /// it. A failed refresh is reported as an error and retried on the next tick.
-final lyraRequestsProvider = StreamProvider.autoDispose<LyraRequests>((
-  ref,
-) async* {
-  final client = ref.watch(lyraClientProvider);
-  if (client == null) {
-    yield const LyraRequests();
-    return;
-  }
-  while (true) {
-    yield await client.requests();
-    await Future<void>.delayed(lyraPollInterval);
-  }
-});
+final AutoDisposeStreamProvider<LyraRequests> lyraRequestsProvider =
+    StreamProvider.autoDispose<LyraRequests>((
+      ref,
+    ) async* {
+      final client = ref.watch(lyraClientProvider);
+      if (client == null) {
+        yield const LyraRequests();
+        return;
+      }
+      while (true) {
+        yield await client.requests();
+        await Future<void>.delayed(lyraPollInterval);
+      }
+    });
 
 /// Presents each server's client certificate to its Lyra address as well, and
 /// keeps that in step with the settings. Called once at startup from
