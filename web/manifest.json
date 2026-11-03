@@ -1,11 +1,11 @@
 {
-    "name": "jplayer",
-    "short_name": "jplayer",
+    "name": "Orpheus",
+    "short_name": "Orpheus",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Orpheus, a Jellyfin music player (fork of JellyBox).",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

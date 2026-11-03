@@ -1,0 +1,29 @@
+Orpheus
+=======
+
+Orpheus is a modified version of JellyBox ("JellyBoxPlayer"), a music player
+for Jellyfin, Emby and Navidrome.
+
+  Original work:  JellyBox, https://github.com/avdept/JellyBoxPlayer
+                  Copyright (C) ProdigyTech Inc. / Alex Sinelnikov and
+                  contributors
+  This fork:      https://github.com/imprudent-coding/Orpheus
+
+Both the original work and this fork are licensed under the GNU Affero
+General Public License, version 3 (see LICENSE). The copyright notices of the
+original work are kept intact. The source code of this modified version,
+including every change listed below, is available at the fork's URL above.
+
+This fork is not affiliated with or endorsed by the JellyBox developers.
+"JellyBox" is used here only to identify the original work.
+
+Summary of changes in this fork
+-------------------------------
+
+- Renamed to "Orpheus". The application/bundle ID on every platform is
+  com.github.imprudentcoding.orpheus (iOS widget extension:
+  com.github.imprudentcoding.orpheus.NowPlayingWidget), so Orpheus installs
+  side by side with JellyBox. The Dart package name (jplayer), the Android
+  Kotlin namespace and internal class names are unchanged.
+- Support links point at the fork's issue tracker instead of the JellyBox
+  developer's email and Discord.

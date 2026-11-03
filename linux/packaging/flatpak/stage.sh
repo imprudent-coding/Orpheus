@@ -5,7 +5,7 @@ set -euo pipefail
 # the finished Flutter bundle plus the desktop entry, icon and metainfo named
 # after the app id, which is what flatpak-builder exports. Build with
 #   flatpak-builder --user --install --force-clean build-dir \
-#     linux/packaging/flatpak/com.prodigytech.jellybox.yml
+#     linux/packaging/flatpak/com.github.imprudentcoding.orpheus.yml
 
 BUNDLE_DIR="${1:?usage: stage.sh <bundle-dir> <version>}"
 VERSION="${2:?}"
@@ -19,18 +19,18 @@ mkdir -p "$STAGE/bundle"
 cp -a "$BUNDLE_DIR/." "$STAGE/bundle/"
 
 sed -e '/^X-AppImage-Version=/d' \
-    -e 's/^Icon=jellybox$/Icon=com.prodigytech.jellybox/' \
-  "$PACKAGING_DIR/com.prodigytech.jellybox.desktop" > "$STAGE/com.prodigytech.jellybox.desktop"
+    -e 's/^Icon=orpheus$/Icon=com.github.imprudentcoding.orpheus/' \
+  "$PACKAGING_DIR/com.github.imprudentcoding.orpheus.desktop" > "$STAGE/com.github.imprudentcoding.orpheus.desktop"
 
 sed -e "s|@VERSION@|$VERSION|" -e "s|@DATE@|$(date -u +%Y-%m-%d)|" \
-  "$SCRIPT_DIR/com.prodigytech.jellybox.metainfo.xml" > "$STAGE/com.prodigytech.jellybox.metainfo.xml"
+  "$SCRIPT_DIR/com.github.imprudentcoding.orpheus.metainfo.xml" > "$STAGE/com.github.imprudentcoding.orpheus.metainfo.xml"
 
-cp "$PACKAGING_DIR/jellybox.png" "$STAGE/com.prodigytech.jellybox.png"
+cp "$PACKAGING_DIR/jellybox.png" "$STAGE/com.github.imprudentcoding.orpheus.png"
 
-cat > "$STAGE/jellybox" <<'EOF'
+cat > "$STAGE/orpheus" <<'EOF'
 #!/bin/sh
-exec /app/lib/jellybox/jellybox "$@"
+exec /app/lib/orpheus/orpheus "$@"
 EOF
-chmod 755 "$STAGE/jellybox"
+chmod 755 "$STAGE/orpheus"
 
 echo "Staged $(du -sh "$STAGE" | cut -f1) into $STAGE"

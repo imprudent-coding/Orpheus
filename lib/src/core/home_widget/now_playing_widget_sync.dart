@@ -34,7 +34,7 @@ abstract interface class WidgetHost {
 class PluginWidgetHost implements WidgetHost {
   const PluginWidgetHost();
 
-  static const appGroup = 'group.com.prodigytech.jellybox';
+  static const appGroup = 'group.com.github.imprudentcoding.orpheus';
   static const androidProvider = 'com.prodigytech.jellybox.NowPlayingWidget';
   static const iosKind = 'NowPlayingWidget';
 

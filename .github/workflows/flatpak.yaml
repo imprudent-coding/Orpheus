@@ -53,7 +53,7 @@ jobs:
       - uses: actions/download-artifact@v4
         if: ${{ inputs.source == 'branch' }}
         with:
-          pattern: jellybox-linux-*
+          pattern: orpheus-linux-*
           merge-multiple: true
           path: built
 
@@ -65,7 +65,7 @@ jobs:
           SOURCE="$(grep -m1 '^version:' pubspec.yaml | awk '{print $2}')"
           VERSION="${SOURCE%+*}"
           mkdir dist
-          mv built/jellybox-linux-*.tar.gz dist/
+          mv built/orpheus-linux-*.tar.gz dist/
           ls -lh dist
           echo "tag=" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -87,7 +87,7 @@ jobs:
           VERSION="${VERSION%%+*}"
           mkdir dist
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
-            --dir dist --pattern 'jellybox-linux-*.tar.gz'
+            --dir dist --pattern 'orpheus-linux-*.tar.gz'
           ls -lh dist
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -137,22 +137,22 @@ jobs:
       - name: Stage bundle
         run: |
           mkdir -p bundle
-          tar xzf dist/jellybox-linux-${{ matrix.arch }}.tar.gz -C bundle
+          tar xzf dist/orpheus-linux-${{ matrix.arch }}.tar.gz -C bundle
           ./linux/packaging/flatpak/stage.sh bundle "${{ needs.fetch.outputs.version }}"
 
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          manifest-path: linux/packaging/flatpak/com.prodigytech.jellybox.yml
-          bundle: jellybox-linux-${{ matrix.flatpak_arch }}.flatpak
+          manifest-path: linux/packaging/flatpak/com.github.imprudentcoding.orpheus.yml
+          bundle: orpheus-linux-${{ matrix.flatpak_arch }}.flatpak
           arch: ${{ matrix.flatpak_arch }}
           cache: false
           upload-artifact: false
 
       - uses: actions/upload-artifact@v4
         with:
-          name: jellybox-linux-flatpak-${{ matrix.arch }}
-          path: jellybox-linux-${{ matrix.flatpak_arch }}.flatpak
+          name: orpheus-linux-flatpak-${{ matrix.arch }}
+          path: orpheus-linux-${{ matrix.flatpak_arch }}.flatpak
 
   release:
     needs: [fetch, build]
@@ -164,7 +164,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          pattern: jellybox-linux-flatpak-*
+          pattern: orpheus-linux-flatpak-*
           merge-multiple: true
           path: dist
 

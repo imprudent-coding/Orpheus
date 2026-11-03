@@ -1,6 +1,6 @@
 import 'dart:io';
 
-const clientName = 'JellyBox Player';
+const clientName = 'Orpheus';
 
 String getCurrentPlatformName() {
   if (Platform.isAndroid) {

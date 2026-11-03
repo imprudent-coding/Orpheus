@@ -308,7 +308,7 @@ class AndroidAutoHandler implements AudioBrowseDelegate {
         MediaItem(
           id: AutoMediaId.signIn,
           title: 'Sign in on your phone',
-          artist: 'Open JellyBox to connect to your server',
+          artist: 'Open Orpheus to connect to your server',
         ),
       ];
     }
@@ -324,7 +324,7 @@ class AndroidAutoHandler implements AudioBrowseDelegate {
   static final _offlineNotice = [
     MediaItem(
       id: AutoMediaId.offline,
-      title: "JellyBox can't connect to your server",
+      title: "Orpheus can't connect to your server",
       artist: 'Downloads are still available',
       artUri: Uri.parse(
         'android.resource://com.prodigytech.jellybox/drawable/ic_auto_offline',

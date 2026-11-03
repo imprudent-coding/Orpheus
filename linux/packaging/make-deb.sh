@@ -17,22 +17,22 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 ROOT="$WORK/root"
-INSTALL_DIR="$ROOT/opt/jellybox"
+INSTALL_DIR="$ROOT/opt/orpheus"
 mkdir -p "$INSTALL_DIR" "$ROOT/usr/bin" "$ROOT/usr/share/applications" \
   "$ROOT/usr/share/icons/hicolor/256x256/apps"
 
 cp -a "$BUNDLE_DIR/." "$INSTALL_DIR/"
 
-cat > "$ROOT/usr/bin/jellybox" <<'EOF'
+cat > "$ROOT/usr/bin/orpheus" <<'EOF'
 #!/bin/sh
-exec /opt/jellybox/jellybox "$@"
+exec /opt/orpheus/orpheus "$@"
 EOF
-chmod 755 "$ROOT/usr/bin/jellybox"
+chmod 755 "$ROOT/usr/bin/orpheus"
 
-sed -e "s|@VERSION@|$VERSION|" -e 's#^Exec=jellybox#Exec=/usr/bin/jellybox#' \
-  "$SCRIPT_DIR/com.prodigytech.jellybox.desktop" > "$ROOT/usr/share/applications/com.prodigytech.jellybox.desktop"
+sed -e "s|@VERSION@|$VERSION|" -e 's#^Exec=orpheus#Exec=/usr/bin/orpheus#' \
+  "$SCRIPT_DIR/com.github.imprudentcoding.orpheus.desktop" > "$ROOT/usr/share/applications/com.github.imprudentcoding.orpheus.desktop"
 
-cp "$SCRIPT_DIR/jellybox.png" "$ROOT/usr/share/icons/hicolor/256x256/apps/jellybox.png"
+cp "$SCRIPT_DIR/jellybox.png" "$ROOT/usr/share/icons/hicolor/256x256/apps/orpheus.png"
 
 # The bundle carries libmpv, libsqlite3 and the GTK stack itself, but GTK
 # reaches for runtime data that lives outside any .so: the compiled GSettings
@@ -46,7 +46,7 @@ cp "$SCRIPT_DIR/jellybox.png" "$ROOT/usr/share/icons/hicolor/256x256/apps/jellyb
 # loaders.cache and never consults the host's.
 fpm -s dir -t deb \
   -C "$ROOT" \
-  -n jellybox \
+  -n orpheus \
   -d 'libgtk-3-0t64 | libgtk-3-0' \
   -d 'libgdk-pixbuf-2.0-0 | libgdk-pixbuf2.0-0' \
   -d libegl1 \
@@ -63,8 +63,8 @@ fpm -s dir -t deb \
   --iteration "$ITERATION" \
   --architecture "$ARCH" \
   --license AGPL-3.0 \
-  --maintainer "Alex Sinelnikov" \
-  --url "https://github.com/avdept/JellyBoxPlayer" \
+  --maintainer "imprudent-coding" \
+  --url "https://github.com/imprudent-coding/Orpheus" \
   --description "Jellyfin client for Linux" \
   --category sound \
   --force \

@@ -10,7 +10,7 @@ class SubsonicApi {
     : _baseUrl = baseUrl;
 
   static const apiVersion = '1.16.1';
-  static const clientId = 'JellyBox';
+  static const clientId = 'Orpheus';
 
   final Dio _dio;
   final String _baseUrl;

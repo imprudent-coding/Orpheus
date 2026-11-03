@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>JellyBox</string>
+	<string>Orpheus</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -44,7 +44,7 @@
 		<string>_CC1AD845._googlecast._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>JellyBox finds your Jellyfin or Emby server, Chromecast and DLNA speakers, and your other JellyBox devices on your local network.</string>
+	<string>Orpheus finds your Jellyfin or Emby server, Chromecast and DLNA speakers on your local network.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Im not using it. Just dependency from package</string>
 	<key>UIApplicationSceneManifest</key>

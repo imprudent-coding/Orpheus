@@ -237,7 +237,7 @@ void main() {
 
         final sent = signInHeaders()['authorization'] as String;
         expect(sent, startsWith('MediaBrowser '));
-        expect(sent, contains('Client="JellyBox Player"'));
+        expect(sent, contains('Client="Orpheus"'));
         expect(sent, contains('DeviceId="test-device"'));
         expect(sent, isNot(contains('Token=')));
         expect(signInHeaders().containsKey('x-emby-authorization'), isFalse);
@@ -260,7 +260,7 @@ void main() {
 
         final sent = signInHeaders()['x-emby-authorization'] as String;
         expect(sent, startsWith('MediaBrowser '));
-        expect(sent, contains('Client="JellyBox Player"'));
+        expect(sent, contains('Client="Orpheus"'));
         expect(sent, contains('DeviceId="test-device"'));
         expect(signInHeaders().containsKey('authorization'), isFalse);
 

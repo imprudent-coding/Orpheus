@@ -9,7 +9,7 @@ KEY_PROPERTIES_PATH = File.join(ANDROID_ROOT, "key.properties")
 UPLOAD_KEYSTORE_PATH = File.join(ANDROID_ROOT, "upload_key.jks")
 AAB_PATH = File.join(PROJECT_ROOT, "build/app/outputs/bundle/release/app-release.aab")
 FLUTTER_APK_PATH = File.join(PROJECT_ROOT, "build/app/outputs/flutter-apk/app-release.apk")
-UNIVERSAL_APK_PATH = File.join(PROJECT_ROOT, "build/app/outputs/universal/jellybox-universal.apk")
+UNIVERSAL_APK_PATH = File.join(PROJECT_ROOT, "build/app/outputs/universal/orpheus-universal.apk")
 
 def create_upload_key
   if ENV["ANDROID_KEYSTORE_ENV_VAR"].to_s.empty?
@@ -31,7 +31,7 @@ def create_upload_key
 end
 
 def play_package_name
-  ENV["PACKAGE_NAME"].to_s.empty? ? "com.prodigytech.jellybox" : ENV["PACKAGE_NAME"]
+  ENV["PACKAGE_NAME"].to_s.empty? ? "com.github.imprudentcoding.orpheus" : ENV["PACKAGE_NAME"]
 end
 
 def play_track

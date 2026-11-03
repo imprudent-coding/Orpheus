@@ -1,7 +1,7 @@
-; Inno Setup script for the JellyBox Windows installer.
+; Inno Setup script for the Orpheus Windows installer.
 ;
 ; Compiled in CI by .github/workflows/windows-release.yaml:
-;   ISCC /DMyAppVersion=2.0.0 /DAppSourceDir=<staged build> /DAppOutputDir=<out> jellybox.iss
+;   ISCC /DMyAppVersion=2.0.0 /DAppSourceDir=<staged build> /DAppOutputDir=<out> orpheus.iss
 ;
 ; The defaults below let it also be compiled locally straight from a
 ; `flutter build windows --release` output, with no /D arguments. Relative
@@ -15,17 +15,17 @@
   #error Inno Setup 7 or newer is required to compile this script.
 #endif
 
-#define MyAppName "JellyBox"
-#define MyAppPublisher "JellyBox"
-#define MyAppURL "https://github.com/avdept/JellyBoxPlayer"
-#define MyAppExeName "jellybox.exe"
+#define MyAppName "Orpheus"
+#define MyAppPublisher "imprudent-coding"
+#define MyAppURL "https://github.com/imprudent-coding/Orpheus"
+#define MyAppExeName "orpheus.exe"
 ; Explicit Application User Model ID. The shell resolves a running process's
 ; AppUserModelID to a display name and icon by finding the shortcut that
 ; carries the same System.AppUserModel.ID, which is what makes the Windows
-; media flyout show "JellyBox" and its icon instead of "Unknown app". MUST
+; media flyout show "Orpheus" and its icon instead of "Unknown app". MUST
 ; stay identical to the string passed to SetCurrentProcessExplicitAppUserModelID
 ; in windows/runner/main.cpp, and must never change (it resets taskbar pins).
-#define MyAppUserModelID "JellyBox.Player"
+#define MyAppUserModelID "Orpheus.Player"
 
 #ifndef MyAppVersion
   #define MyAppVersion "0.0.0"
@@ -49,7 +49,8 @@
 [Setup]
 ; AppId must stay constant across versions so installs upgrade in place
 ; instead of stacking up as separate entries in Apps & features.
-AppId={{C2A3707E-326A-44AC-B72F-47851151F3D0}
+; ORPHEUS: own AppId so Orpheus installs side by side with JellyBox.
+AppId={{0D04EC02-CB33-4A6C-9AAA-744CCBF3A51B}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -79,7 +80,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 
 OutputDir={#AppOutputDir}
 ; Deliberately version-less so the release asset keeps a stable name and
-; https://github.com/avdept/JellyBoxPlayer/releases/latest/download/windows-setup.exe
+; https://github.com/imprudent-coding/Orpheus/releases/latest/download/windows-setup.exe
 ; can be linked directly. The version still ships inside the installer via
 ; AppVersion / VersionInfoVersion above.
 OutputBaseFilename=windows-setup

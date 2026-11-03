@@ -16,7 +16,7 @@
     <application
         android:usesCleartextTraffic="true"
         android:appCategory="audio"
-        android:label="JellyBox Player"
+        android:label="Orpheus"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
