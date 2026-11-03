@@ -1,228 +1,170 @@
-> [!NOTE]
-> **This is Orpheus, a modified fork of [JellyBox](https://github.com/avdept/JellyBoxPlayer).**
-> It adds client-certificate (mTLS) support through an in-app loopback proxy, music requests
-> through [Lyra](https://github.com/imprudent-coding/streamrip) (Settings > Lyra), and removes
-> the JellyBox cloud relay, Sentry, Plausible and the store review prompt.
-> Updates are checked against [this fork's releases](https://github.com/imprudent-coding/Orpheus/releases).
-> See [NOTICE](./NOTICE) for the full list of changes and [SYNC.md](./SYNC.md) for how the fork
-> tracks upstream. Report problems with Orpheus [here](https://github.com/imprudent-coding/Orpheus/issues),
-> not to the JellyBox developer. The rest of this README is upstream's and describes JellyBox.
-
 <div align="center">
 
-<img src="./docs/logo.png" width="120" alt="JellyBox logo">
+# Orpheus
 
-# JellyBox
-
-**A native crossplatform music player for your Jellyfin, Emby or Navidrome server - on macOS, Windows, Linux, iOS and Android, with Apple CarPlay and Android Auto.**
+**A native music player for your self-hosted Jellyfin, Emby or Navidrome server, on Windows, Linux, Android, macOS and iOS, built for libraries behind client-certificate (mTLS) reverse proxies.**
 
 [![Works with Jellyfin](https://img.shields.io/badge/Jellyfin-00A4DC?logo=jellyfin&logoColor=white)](https://jellyfin.org)
 [![Works with Emby](https://img.shields.io/badge/Emby-52B54B?logo=emby&logoColor=white)](https://emby.media)
 [![Works with Navidrome](https://img.shields.io/badge/Navidrome-1F2A44?logoColor=white)](https://www.navidrome.org)
 
-[![Build Status](https://github.com/avdept/JellyBoxPlayer/actions/workflows/tests.yaml/badge.svg)](https://github.com/avdept/JellyBoxPlayer/actions)
-[![Latest release](https://img.shields.io/github/v/release/avdept/JellyBoxPlayer)](https://github.com/avdept/JellyBoxPlayer/releases/latest)
-[![GitHub downloads](https://img.shields.io/github/downloads/avdept/JellyBoxPlayer/total?logo=github&logoColor=white&label=downloads)](https://github.com/avdept/JellyBoxPlayer/releases)
+[![Latest release](https://img.shields.io/github/v/release/imprudent-coding/Orpheus)](https://github.com/imprudent-coding/Orpheus/releases/latest)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue)](./LICENSE)
-[![Stars](https://img.shields.io/github/stars/avdept/JellyBoxPlayer?style=flat)](https://github.com/avdept/JellyBoxPlayer/stargazers)
-[![Follow @_avdept](https://img.shields.io/badge/@__avdept-000000?logo=x&logoColor=white)](https://x.com/_avdept)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/avdept)
 
-[Website](https://jellybox.app) · [Download](#download) · [Screenshots](#screenshots) · [Features](#features) · [Development](#development)
-
-<img src="./docs/screenshots/desktop-and-mobile.png" width="100%" alt="JellyBox on macOS and Android, showing the home page with recently added albums, mixes made for you and recently played">
+[Download](#download) · [What Orpheus adds](#what-orpheus-adds) · [Features](#features) · [Development](#development) · [Credits](#credits-and-license)
 
 </div>
 
 ---
 
-JellyBox is a music client for [Jellyfin](https://jellyfin.org), [Emby](https://emby.media) and [Navidrome](https://www.navidrome.org) (any OpenSubsonic-compatible server can be tried, but only Navidrome is tested). It focuses on doing one thing well: making your own music library feel like a modern streaming app - fast browsing, offline downloads and progressive caching, lyrics, spotify-like everyday playlists along with a UI built for each platform rather than a single stretched layout.
+Orpheus is a music client for [Jellyfin](https://jellyfin.org), [Emby](https://emby.media) and [Navidrome](https://www.navidrome.org) (other OpenSubsonic servers may work, but only Navidrome is tested). It makes your own library feel like a streaming app: fast browsing, offline downloads, lyrics, everyday mixes, and a layout made for each platform.
+
+On top of that, Orpheus is built for servers that are not open to the whole internet. It presents a **client certificate (mTLS)** to servers behind a reverse proxy that requires one, and it can **request music you don't have yet** through [Lyra](https://github.com/imprudent-coding/streamrip). It has no telemetry, crash reporting or cloud relay (see [Privacy](#privacy)).
 
 > [!IMPORTANT]
-> JellyBox is a client, not a server. You need access to a running Jellyfin, Emby or Navidrome server with a music library on it.
+> Orpheus is a client, not a server. You need a running Jellyfin, Emby or Navidrome server with a music library on it.
 
 ## Download
 
-| Platform | Format | |
-|---|---|---|
-| **iOS / iPadOS / macOS**  | App Store | [![App Store](https://img.shields.io/badge/App_Store-0D96F6?logo=apple&logoColor=white)](https://apps.apple.com/us/app/jellybox-player/id6469732117) |
-| **macOS** | `.dmg` (signed & notarized) | [Latest release](https://github.com/avdept/JellyBoxPlayer/releases/latest) |
-| **Windows** | Installer `.exe` or portable `.zip` | [Latest release](https://github.com/avdept/JellyBoxPlayer/releases/latest) |
-| **Linux** | `.flatpak`, `.AppImage`, `.deb`, `.rpm` or `.tar.gz` bundle (x64 & arm64) | [Latest release](https://github.com/avdept/JellyBoxPlayer/releases/latest) |
-| **Android** | Google Play | [![Google Play](https://img.shields.io/badge/Google_Play-414141?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=com.prodigytech.jellybox) |
-| **Android** | `.apk` (sideload) | [Latest release](https://github.com/avdept/JellyBoxPlayer/releases/latest) |
+Get the latest build from the [releases page](https://github.com/imprudent-coding/Orpheus/releases/latest).
 
-## Screenshots
+| Platform | Release asset |
+|---|---|
+| **Windows** | `windows-setup.exe` (installer) or `windows-portable.zip` |
+| **Linux** (x64 and arm64) | `.AppImage`, `.deb`, `.rpm` or `.tar.gz` bundle (`orpheus-linux-*`) |
+| **Android** | `orpheus-universal.apk` (sideload) |
+| **macOS** | `Orpheus-<version>.dmg`, when the release includes one |
+| **iOS** | Not distributed; build it from source |
 
-### Desktop
+Orpheus installs side by side with JellyBox: it uses its own application ID (`com.github.imprudentcoding.orpheus`) on every platform. Release builds check this repository for updates.
 
-<div align="center">
-  <img src="./docs/screenshots/studio-mode.png" width="90%" alt="Studio Mode - full-screen playback with an animated backdrop">
-  <p><b>Studio Mode</b> - full-screen animated mode made for aesthetic</p>
-</div>
+## What Orpheus adds
 
-<table>
-  <tr>
-    <td width="50%"><img src="./docs/screenshots/home.png" alt="Home page with recently played, mixes made for you and recently added"></td>
-    <td width="50%"><img src="./docs/screenshots/lyrics.png" alt="Time-synced lyrics"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Home</b></td>
-    <td align="center"><b>Time-synced lyrics</b></td>
-  </tr>
-</table>
+### Client certificates (mTLS)
 
-<details>
-<summary><b>More screenshots</b> - songs, search, albums, artists, downloads</summary>
-<br>
+Keep your music server behind a reverse proxy (Caddy, nginx, Traefik…) that only lets in devices with a certificate you issued.
 
-<table>
-  <tr>
-    <td width="50%"><img src="./docs/screenshots/songs.png" alt="Songs view"></td>
-    <td width="50%"><img src="./docs/screenshots/search.png" alt="Search across albums, artists, songs and playlists"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Songs</b></td>
-    <td align="center"><b>Search</b></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="./docs/screenshots/album.png" alt="Albums grid"></td>
-    <td width="50%"><img src="./docs/screenshots/artist.png" alt="Artist view with biography and discography"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Albums</b></td>
-    <td align="center"><b>Artist</b></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="./docs/screenshots/downloads.png" alt="Downloaded albums available offline"></td>
-    <td width="50%"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Downloads</b></td>
-    <td></td>
-  </tr>
-</table>
+- Import a PKCS#12 file (`.p12` / `.pfx`) when you add a server, or later under **Settings → Client certificate (mTLS)**. It is stored in the system keychain, and its name, issuer and expiry date are shown, with a warning before it expires.
+- The certificate is presented only to that server's own addresses (home and remote), never to anyone else. A private CA can be trusted for the server too.
+- Everything works through it: browsing, artwork, streaming, downloads, Android Auto, CarPlay and the media controls of each OS. Native players and downloaders go through a loopback proxy inside the app, protected by a random token that is different at every launch.
+- If sign-in fails because the server wants a certificate, or refuses the one you gave it, Orpheus tells you so.
+- Cast and DLNA are turned off for such a server: those devices fetch the stream themselves and cannot present the certificate.
 
-</details>
+### Music requests with Lyra
 
-### Mobile
+[Lyra](https://github.com/imprudent-coding/streamrip) is a small self-hosted service that searches streaming catalogues and queues downloads for import into your library.
 
-<table>
-  <tr>
-    <td width="20%"><img src="./docs/screenshots/mobile-home.png" alt="Home page on iPhone with recently played, mixes made for you and recently added"></td>
-    <td width="20%"><img src="./docs/screenshots/mobile-player.jpg" alt="Now playing on iPhone"></td>
-    <td width="20%"><img src="./docs/screenshots/mobile-lyrics.jpg" alt="Time-synced lyrics on iPhone"></td>
-    <td width="20%"><img src="./docs/screenshots/mobile-artist.jpg" alt="Artist view on iPhone"></td>
-    <td width="20%"><img src="./docs/screenshots/mobile-downloads.jpg" alt="Downloads on iPhone"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Home</b></td>
-    <td align="center"><b>Now playing</b></td>
-    <td align="center"><b>Lyrics</b></td>
-    <td align="center"><b>Artist</b></td>
-    <td align="center"><b>Downloads</b></td>
-  </tr>
-</table>
+- Set its address under **Settings → Lyra** (one per server). Lyra sits behind the same reverse proxy and gets the same client certificate.
+- **Request music** (in the desktop sidebar, or under Settings → Lyra on mobile): search Qobuz, Tidal, Deezer or SoundCloud, then request an album, track or playlist with one tap.
+- The **Requests** tab follows each request from queued to downloaded. A downloaded release shows up in your library after the import and the next library scan.
 
-<div align="center">
-  <img src="./docs/screenshots/mobile-landscape.png" width="90%" alt="Landscape now-playing layout on a phone">
-  <p><b>Landscape now playing</b> - rotate your phone for a wide player layout</p>
-</div>
+### Privacy
+
+Orpheus removes the JellyBox cloud relay and continuity service, Sentry crash reporting, Plausible analytics and the store review prompt, and turns off Discord Rich Presence. Besides your own servers, it contacts only:
+
+- GitHub, to check for updates;
+- [LRCLIB](https://lrclib.net), for lyrics your server doesn't have (on by default, under Settings → Lyrics);
+- [ListenBrainz](https://listenbrainz.org), if you connect an account;
+- an animated-cover lookup service, if you turn on animated album covers. It receives artist and album names.
 
 ## Features
 
 **Library & browsing**
-- [x] Connect to Jellyfin, Emby or Navidrome (Subsonic API) servers, and switch between them without signing out
-- [x] Jellyfin Quick Connect - sign in from your phone or desktop without typing a password
-- [x] Browse albums, artists, genres, playlists and songs across multiple music libraries
-- [x] Search everything at once, or filter to playlists, albums, artists or songs
-- [x] Artist pages with biography and full discography
-- [x] Favourite tracks, synced back to your server
-- [x] Create playlists and add tracks to them from anywhere in the app
-- [x] Genre mixes on the home page, built from the genres you actually play - see
-  [Normalizing your music genres](./docs/normalizing-genres.md) if your genre tags are messy
-- [x] Home page with recently played, recently added and personalised mixes
+- Jellyfin, Emby and Navidrome (Subsonic API) servers; switch between them without signing out
+- Jellyfin Quick Connect: sign in without typing a password
+- Albums, artists, genres, playlists and songs across multiple music libraries
+- Search everything at once, or only playlists, albums, artists or songs
+- Artist pages with biography and discography
+- Favourites synced to your server; create and edit playlists from anywhere
+- Home page with recently played, recently added and personalised mixes, including genre mixes built from what you play (see [Normalizing your music genres](./docs/normalizing-genres.md) if your genre tags are messy)
 
 **Playback**
-- [x] Playback memory - app remembers your queue and playback position between restarts
-- [x] Time-synced lyrics overlay
-- [x] Queue management with shuffle, repeat and a randomised "surprise me" queue
-- [x] Per-connection streaming profiles with automatic transcoding when a codec isn't supported natively
-- [x] Audio quality badge, so you always know whether you're getting the original file
-- [x] Landscape now-playing layout on phones
-- [x] ListenBrainz scrobbling - listens and now-playing go to your ListenBrainz account - see [ListenBrainz](./docs/listenbrainz.md)
+- Queue and position remembered between restarts
+- Time-synced lyrics
+- Shuffle, repeat and a random "surprise me" queue
+- Per-connection streaming profiles, with transcoding when a codec isn't supported natively
+- Audio quality badge showing whether you're getting the original file
+- Landscape now-playing layout on phones
+- ListenBrainz scrobbling
 
 **Offline**
-- [x] Download albums and tracks for offline listening
-- [x] Full offline mode - access to your downloaded tracks even if you're on plane.
+- Download albums and tracks
+- Full offline mode for your downloads
 
 **Look & feel**
-- [x] Colour scheme generated from the current album artwork
-- [x] Studio Mode - a full screen animated mode for aesthetic feel(see screenshots)
+- Colour scheme generated from the current album artwork
+- Studio Mode: full-screen animated playback on desktop
 
 **Desktop & system integration**
-- [x] Media keys and global keyboard shortcuts
-- [x] MPRIS support on Linux (works with GNOME/KDE media widgets and `playerctl`)
-- [x] Windows media overlay - now playing with artwork and transport controls in the system media popup, plus media key support
-- [x] AirPlay and system output routing on macOS and iOS
-- [x] Cast to DLNA / UPnP renderers (smart TVs, network speakers and receivers)
-- [x] Lock screen and notification controls on iOS and Android
-- [x] In-app changelog, so you can see what landed in each release
-- [x] Apple CarPlay - currently in beta stage.
-- [x] Android Auto - currently in beta stage.
+- Media keys and global keyboard shortcuts
+- MPRIS on Linux (GNOME/KDE media controls, `playerctl`)
+- Windows media overlay with artwork and transport controls
+- AirPlay and system output routing on macOS and iOS
+- Cast to DLNA / UPnP renderers (not for servers that need a client certificate)
+- Lock screen and notification controls on iOS and Android
+- Apple CarPlay and Android Auto (beta)
+- In-app changelog from this repository's release notes
 
 ## Platform notes
 
-### macOS - media keys
-
-macOS does not let an app read media keys without permission. On first use JellyBox will point you at **System Settings → Privacy & Security → Accessibility**; enable **JellyBox** there. If it isn't in the list, add it with the **+** button.
-
 ### Windows
 
-The installer is unsigned, so SmartScreen will warn on first run - choose **More info → Run anyway**. The portable zip has no installer and can be run from anywhere.
-
-### Android
-
-Install from [Google Play](https://play.google.com/store/apps/details?id=com.prodigytech.jellybox), or sideload the APK from the [releases page](https://github.com/avdept/JellyBoxPlayer/releases). For the APK you'll need to allow installs from your browser or file manager.
+The installer is not code-signed, so SmartScreen warns on first run: choose **More info → Run anyway**. The portable zip needs no installation.
 
 ### Linux
 
-**Flatpak** - the `.flatpak` bundle brings its own libraries and only needs the freedesktop runtime, which it pulls from Flathub on install:
-
-```bash
-flatpak install ./jellybox-linux-x86_64.flatpak
-```
-
-**Other packages** - the release bundle expects a few shared libraries. On Debian/Ubuntu:
+The bundles expect a few shared libraries. On Debian/Ubuntu:
 
 ```bash
 sudo apt-get install libmpv-dev mpv libasound2-dev libsecret-1-dev libsqlite3-dev libjsoncpp-dev libcurl4-openssl-dev libdbus-1-dev
 ```
 
-Note: Recently I bundled libs with app, but I need more folks to actually test it on different distros.
+Importing a certificate uses the system file picker, which needs zenity, kdialog or the XDG desktop portal.
+
+### Android
+
+Allow installs from your browser or file manager, then open the APK. An update installs over the previous version only if both were signed with the same key.
+
+### macOS
+
+The DMG is not notarized unless the release was built with Apple credentials; open it with right-click → **Open** the first time. To use media keys, allow Orpheus under **System Settings → Privacy & Security → Accessibility**.
 
 ## Development
 
-**Prerequisites** - [Flutter](https://docs.flutter.dev/get-started/install) with Dart SDK 3.8 or newer, plus the toolchain for whichever platform you're targeting (Xcode, Android Studio, or the Linux packages above).
+**Prerequisites:** [Flutter](https://docs.flutter.dev/get-started/install) with Dart SDK 3.8 or newer, plus the toolchain for your target platform (Visual Studio, Android Studio, Xcode, or the Linux packages above).
 
 ```bash
-git clone https://github.com/avdept/JellyBoxPlayer.git
-cd JellyBoxPlayer
-
+git clone https://github.com/imprudent-coding/Orpheus.git
+cd Orpheus
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # freezed, json_serializable, retrofit
-flutter run                                                # then pick a target device
+flutter run
 ```
 
-Run the tests with `flutter test`, and the analyzer with `flutter analyze` - CI runs both on every push.
+Checks, as CI runs them:
 
-Codegen is needed whenever you touch a model, DTO or API client; those `*.g.dart` and `*.freezed.dart` files are generated, not hand-edited.
+```bash
+flutter analyze && flutter test
+```
 
+```bash
+(cd packages/mtls_proxy && flutter analyze && flutter test)
+```
 
-## Contributing
+Regenerate the `*.g.dart` and `*.freezed.dart` files with `build_runner` whenever you change a model, DTO or API client; don't edit them by hand.
 
-Bug reports, feature requests and pull requests are all welcome - see [CONTRIBUTING.md](./CONTRIBUTING.md) for the workflow.
+Where things live:
+- `packages/mtls_proxy`: client certificates, their storage and the loopback proxy
+- `lib/src/orpheus/`: the app-side mTLS wiring, its settings UI, and the Lyra client and pages
+- [SYNC.md](./SYNC.md): how Orpheus stays rebased on upstream JellyBox, and every upstream file it touches
+- [docs/orpheus-testing.md](./docs/orpheus-testing.md): the manual test checklist
 
-## License
+Bug reports and pull requests are welcome on the [issue tracker](https://github.com/imprudent-coding/Orpheus/issues); see [CONTRIBUTING.md](./CONTRIBUTING.md). Please report problems with Orpheus here, not to the JellyBox developer.
 
-[GNU AGPL-3.0](./LICENSE) © ProdigyTech Inc.
+## Credits and license
+
+Orpheus is a modified version of **[JellyBox](https://github.com/avdept/JellyBoxPlayer)** by Alex Sinelnikov / ProdigyTech Inc. and its contributors. Almost everything that makes Orpheus a good music player comes from their work. If you like it, consider [supporting the JellyBox developer](https://www.buymeacoffee.com/avdept).
+
+Orpheus is not affiliated with or endorsed by the JellyBox developers; the name JellyBox is used only to identify the original work. [NOTICE](./NOTICE) lists every change this fork makes.
+
+Like the original, Orpheus is licensed under the [GNU Affero General Public License v3.0](./LICENSE). Copyright © ProdigyTech Inc. and contributors, with modifications by the Orpheus contributors. The original copyright notices are kept intact.
