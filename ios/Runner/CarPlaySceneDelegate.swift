@@ -6,7 +6,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
   CPNowPlayingTemplateObserver {
   private var interfaceController: CPInterfaceController?
   private var tabBar: CPTabBarTemplate?
-  private let homeTemplate = CPListTemplate(title: "JellyBox", sections: [])
+  private let homeTemplate = CPListTemplate(title: "Orpheus", sections: [])
   private let downloadsTemplate = CPListTemplate(title: "Downloads", sections: [])
   private let searchTemplate = CPListTemplate(title: "Search", sections: [])
   private weak var pushedTemplate: CPListTemplate?
@@ -193,7 +193,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
 
   private func reload() {
     guard CarPlayBridge.shared.isReady else {
-      let waiting = ["Open JellyBox on your iPhone to get started"]
+      let waiting = ["Open Orpheus on your iPhone to get started"]
       homeTemplate.emptyViewTitleVariants = waiting
       downloadsTemplate.emptyViewTitleVariants = waiting
       return

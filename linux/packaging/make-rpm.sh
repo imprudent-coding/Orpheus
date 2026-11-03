@@ -17,22 +17,22 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 ROOT="$WORK/root"
-INSTALL_DIR="$ROOT/opt/jellybox"
+INSTALL_DIR="$ROOT/opt/orpheus"
 mkdir -p "$INSTALL_DIR" "$ROOT/usr/bin" "$ROOT/usr/share/applications" \
   "$ROOT/usr/share/icons/hicolor/256x256/apps"
 
 cp -a "$BUNDLE_DIR/." "$INSTALL_DIR/"
 
-cat > "$ROOT/usr/bin/jellybox" <<'EOF'
+cat > "$ROOT/usr/bin/orpheus" <<'EOF'
 #!/bin/sh
-exec /opt/jellybox/jellybox "$@"
+exec /opt/orpheus/orpheus "$@"
 EOF
-chmod 755 "$ROOT/usr/bin/jellybox"
+chmod 755 "$ROOT/usr/bin/orpheus"
 
-sed -e "s|@VERSION@|$VERSION|" -e 's#^Exec=jellybox#Exec=/usr/bin/jellybox#' \
-  "$SCRIPT_DIR/com.prodigytech.jellybox.desktop" > "$ROOT/usr/share/applications/com.prodigytech.jellybox.desktop"
+sed -e "s|@VERSION@|$VERSION|" -e 's#^Exec=orpheus#Exec=/usr/bin/orpheus#' \
+  "$SCRIPT_DIR/com.github.imprudentcoding.orpheus.desktop" > "$ROOT/usr/share/applications/com.github.imprudentcoding.orpheus.desktop"
 
-cp "$SCRIPT_DIR/jellybox.png" "$ROOT/usr/share/icons/hicolor/256x256/apps/jellybox.png"
+cp "$SCRIPT_DIR/jellybox.png" "$ROOT/usr/share/icons/hicolor/256x256/apps/orpheus.png"
 
 # See make-deb.sh for why these are needed, and for why librsvg2 is no longer
 # among them. Names below are the Fedora/RHEL spellings; openSUSE calls gtk3
@@ -40,7 +40,7 @@ cp "$SCRIPT_DIR/jellybox.png" "$ROOT/usr/share/icons/hicolor/256x256/apps/jellyb
 # this rpm targets the Fedora family.
 fpm -s dir -t rpm \
   -C "$ROOT" \
-  -n jellybox \
+  -n orpheus \
   -d gtk3 \
   -d libglvnd-egl \
   -d mesa-libgbm \
@@ -56,8 +56,8 @@ fpm -s dir -t rpm \
   --iteration "$ITERATION" \
   --architecture "$ARCH" \
   --license AGPL-3.0 \
-  --maintainer "Alex Sinelnikov" \
-  --url "https://github.com/avdept/JellyBoxPlayer" \
+  --maintainer "imprudent-coding" \
+  --url "https://github.com/imprudent-coding/Orpheus" \
   --description "Jellyfin client for Linux" \
   --category sound \
   --force \

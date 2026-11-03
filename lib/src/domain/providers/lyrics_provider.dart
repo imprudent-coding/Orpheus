@@ -16,11 +16,11 @@ final lrclibClientProvider = Provider<LrclibClient>(
 );
 
 String _userAgent() {
-  const project = 'https://github.com/avdept/JellyBoxPlayer';
+  const project = 'https://github.com/imprudent-coding/Orpheus';
   try {
-    return 'JellyBox v${appInfo.version} ($project)';
+    return 'Orpheus v${appInfo.version} ($project)';
   } catch (_) {
-    return 'JellyBox ($project)';
+    return 'Orpheus ($project)';
   }
 }
 

@@ -3,7 +3,7 @@ set -euo pipefail
 
 BUNDLE_DIR="${1:?usage: bundle-libs.sh <bundle-dir>}"
 LIB_DIR="$BUNDLE_DIR/lib"
-BIN="$BUNDLE_DIR/jellybox"
+BIN="$BUNDLE_DIR/orpheus"
 
 mkdir -p "$LIB_DIR"
 

@@ -73,7 +73,7 @@ Future<void> main() async {
       adoptFrom: Platform.isAndroid ? getApplicationSupportDirectory : null,
     ),
     header:
-        'JellyBox ${appInfo.version}+${appInfo.buildNumber} starting on '
+        'Orpheus ${appInfo.version}+${appInfo.buildNumber} starting on '
         '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
   );
   DeviceLog.install();

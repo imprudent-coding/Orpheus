@@ -46,7 +46,7 @@ class UpdateBanner extends ConsumerWidget {
                           ),
                         ),
                         TextSpan(
-                          text: 'JellyBox ${update.version} is available  ',
+                          text: 'Orpheus ${update.version} is available  ',
                         ),
                         TextSpan(
                           text: 'Download',

@@ -175,7 +175,7 @@ class _MainPageState extends ConsumerState<MainPage> {
                         alignment: Alignment.centerLeft,
                         slide: 0,
                         child: Text(
-                          'JellyBox',
+                          'Orpheus',
                           maxLines: 1,
                           softWrap: false,
                           style: TextStyle(

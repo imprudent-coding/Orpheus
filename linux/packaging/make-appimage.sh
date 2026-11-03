@@ -14,9 +14,9 @@ mkdir -p "$APPDIR"
 cp -a "$BUNDLE_DIR/." "$APPDIR/"
 
 install -m755 "$SCRIPT_DIR/AppRun" "$APPDIR/AppRun"
-sed "s|@VERSION@|$VERSION|" "$SCRIPT_DIR/com.prodigytech.jellybox.desktop" > "$APPDIR/com.prodigytech.jellybox.desktop"
-install -m644 "$SCRIPT_DIR/jellybox.png" "$APPDIR/jellybox.png"
-ln -sf jellybox.png "$APPDIR/.DirIcon"
+sed "s|@VERSION@|$VERSION|" "$SCRIPT_DIR/com.github.imprudentcoding.orpheus.desktop" > "$APPDIR/com.github.imprudentcoding.orpheus.desktop"
+install -m644 "$SCRIPT_DIR/jellybox.png" "$APPDIR/orpheus.png"
+ln -sf orpheus.png "$APPDIR/.DirIcon"
 
 # appimagetool is itself an AppImage, so it has to match the host arch.
 case "$(uname -m)" in

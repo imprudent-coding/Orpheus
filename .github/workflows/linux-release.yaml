@@ -134,20 +134,20 @@ jobs:
       - name: Create archive
         run: |
           cd build/linux/${{ matrix.arch }}/release/bundle
-          tar czf "$GITHUB_WORKSPACE/jellybox-linux-${{ matrix.arch }}.tar.gz" .
+          tar czf "$GITHUB_WORKSPACE/orpheus-linux-${{ matrix.arch }}.tar.gz" .
 
       - name: Build AppImage
         run: |
           ./linux/packaging/make-appimage.sh \
             build/linux/${{ matrix.arch }}/release/bundle \
-            "$GITHUB_WORKSPACE/jellybox-linux-${{ matrix.appimage_arch }}.AppImage" \
+            "$GITHUB_WORKSPACE/orpheus-linux-${{ matrix.appimage_arch }}.AppImage" \
             "${{ needs.version.outputs.version }}"
 
       - name: Build .deb package
         run: |
           ./linux/packaging/make-deb.sh \
             build/linux/${{ matrix.arch }}/release/bundle \
-            "$GITHUB_WORKSPACE/jellybox-linux-${{ matrix.deb_arch }}.deb" \
+            "$GITHUB_WORKSPACE/orpheus-linux-${{ matrix.deb_arch }}.deb" \
             "${{ needs.version.outputs.version }}" \
             "${{ needs.version.outputs.build_number }}"
 
@@ -155,19 +155,19 @@ jobs:
         run: |
           ./linux/packaging/make-rpm.sh \
             build/linux/${{ matrix.arch }}/release/bundle \
-            "$GITHUB_WORKSPACE/jellybox-linux-${{ matrix.rpm_arch }}.rpm" \
+            "$GITHUB_WORKSPACE/orpheus-linux-${{ matrix.rpm_arch }}.rpm" \
             "${{ needs.version.outputs.version }}" \
             "${{ needs.version.outputs.build_number }}"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: jellybox-linux-${{ matrix.arch }}
+          name: orpheus-linux-${{ matrix.arch }}
           path: |
-            jellybox-linux-${{ matrix.arch }}.tar.gz
-            jellybox-linux-${{ matrix.appimage_arch }}.AppImage
-            jellybox-linux-${{ matrix.deb_arch }}.deb
-            jellybox-linux-${{ matrix.rpm_arch }}.rpm
+            orpheus-linux-${{ matrix.arch }}.tar.gz
+            orpheus-linux-${{ matrix.appimage_arch }}.AppImage
+            orpheus-linux-${{ matrix.deb_arch }}.deb
+            orpheus-linux-${{ matrix.rpm_arch }}.rpm
 
   # Publishing is its own job so the two build legs never race to upload the
   # same release assets.
@@ -182,7 +182,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: jellybox-linux-*
+          pattern: orpheus-linux-*
           merge-multiple: true
           path: dist
 

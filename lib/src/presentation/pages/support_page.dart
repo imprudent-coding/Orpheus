@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:jplayer/main.dart';
 import 'package:jplayer/src/core/diagnostics/device_log.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
 import 'package:jplayer/src/presentation/widgets/widgets.dart';
@@ -12,24 +11,14 @@ import 'package:url_launcher/url_launcher.dart';
 class SupportPage extends StatelessWidget {
   const SupportPage({super.key});
 
-  static const _email = 'jellybox@prodigytech.dev';
-  static final Uri _discordUri = Uri.parse('https://discord.gg/vttezPMvKh');
+  // ORPHEUS: support goes to the fork, not to the upstream developer's inbox
+  // or Discord. The donate link still credits the original JellyBox author.
   static final Uri _issuesUri = Uri.parse(
-    'https://github.com/avdept/JellyBoxPlayer/issues',
+    'https://github.com/imprudent-coding/Orpheus/issues',
   );
   static final Uri _donateUri = Uri.parse(
     'https://www.buymeacoffee.com/avdept',
   );
-
-  static Uri _emailUri() {
-    final build = appInfo.buildNumber;
-    final version = build.isEmpty
-        ? appInfo.version
-        : '${appInfo.version} ($build)';
-    final subject = Uri.encodeComponent('JellyBox support');
-    final body = Uri.encodeComponent('\n\nApp version: $version');
-    return Uri.parse('mailto:$_email?subject=$subject&body=$body');
-  }
 
   void _open(Uri uri) =>
       unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
@@ -60,7 +49,7 @@ class SupportPage extends StatelessWidget {
         files: [
           for (final file in files) XFile(file.path, mimeType: 'text/plain'),
         ],
-        subject: 'JellyBox log',
+        subject: 'Orpheus log',
         sharePositionOrigin: origin,
       ),
     );
@@ -111,7 +100,9 @@ class SupportPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 8),
                   Text(
-                    'Questions, problems or ideas? Get in touch. Please try to report as much details as possible - that will help me to identify issue and help you with resolving it.',
+                    'Orpheus is a modified fork of JellyBox. Please report problems '
+                    'with this fork on its GitHub page, not to the JellyBox '
+                    'developer. Include as much detail as possible.',
                     style: TextStyle(
                       fontSize: 14,
                       height: 1.3,
@@ -121,13 +112,6 @@ class SupportPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  _tile(
-                    theme: theme,
-                    icon: Icons.mail_outline,
-                    title: 'Email me',
-                    subtitle: _email,
-                    onTap: () => _open(_emailUri()),
-                  ),
                   _tile(
                     theme: theme,
                     icon: Icons.description_outlined,
@@ -142,14 +126,6 @@ class SupportPage extends StatelessWidget {
                   ),
                   _tile(
                     theme: theme,
-                    icon: Icons.discord,
-                    title: 'Join Discord',
-                    subtitle:
-                        'Chat with the me (Alex, the developer) and other users',
-                    onTap: () => _open(_discordUri),
-                  ),
-                  _tile(
-                    theme: theme,
                     icon: Icons.bug_report_outlined,
                     title: 'Create a GitHub issue',
                     subtitle: 'Report a bug or request a feature',
@@ -158,10 +134,10 @@ class SupportPage extends StatelessWidget {
                   _tile(
                     theme: theme,
                     icon: Icons.coffee_outlined,
-                    title: 'Donate',
+                    title: 'Support the JellyBox developer',
                     subtitle:
-                        'This will help me to buy new devices to develop '
-                        'for and test on',
+                        'Orpheus is built on JellyBox by Alex Sinelnikov. '
+                        'Donations go to the original author.',
                     onTap: () => _open(_donateUri),
                   ),
                 ],

@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=JellyBox
+Name=Orpheus
 Comment=Jellyfin client
-Exec=jellybox
-Icon=jellybox
+Exec=orpheus
+Icon=orpheus
 Categories=AudioVideo;Player;Network;
 Terminal=false
-StartupWMClass=jellybox
+StartupWMClass=orpheus
 X-AppImage-Version=@VERSION@

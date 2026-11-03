@@ -1,7 +1,7 @@
 import 'package:jplayer/src/core/scrobbling/listen.dart';
 import 'package:jplayer/src/domain/models/models.dart';
 
-const listenBrainzClientName = 'JellyBox Player';
+const listenBrainzClientName = 'Orpheus';
 
 final _mbidPattern = RegExp(
   r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',

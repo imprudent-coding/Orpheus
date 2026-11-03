@@ -99,5 +99,5 @@ jobs:
         uses: ./.github/actions/release-assets
         with:
           release-tag: ${{ inputs.release_tag }}
-          files: build/app/outputs/universal/jellybox-universal.apk
+          files: build/app/outputs/universal/orpheus-universal.apk
           token: ${{ secrets.GITHUB_TOKEN }}

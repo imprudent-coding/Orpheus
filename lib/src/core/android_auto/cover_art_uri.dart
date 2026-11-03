@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
-const coverArtAuthority = 'com.prodigytech.jellybox.covers';
+// ORPHEUS: must equal ${applicationId}.covers from android/app/build.gradle.
+const coverArtAuthority = 'com.github.imprudentcoding.orpheus.covers';
 const coverArtChannel = 'com.prodigytech.jellybox/cover_art';
 const remoteCoverSegment = 'remote';
 const assetCoverSegment = 'asset';

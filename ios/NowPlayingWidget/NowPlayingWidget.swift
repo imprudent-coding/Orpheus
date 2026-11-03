@@ -51,7 +51,7 @@ struct WidgetSnapshot {
     case signedOut
   }
 
-  static let appGroup = "group.com.prodigytech.jellybox"
+  static let appGroup = "group.com.github.imprudentcoding.orpheus"
   static let recentCount = 4
   static let defaultBackground = Color(red: 0x2B / 255, green: 0x2B / 255, blue: 0x30 / 255)
 
@@ -64,11 +64,11 @@ struct WidgetSnapshot {
   var background = defaultBackground
   var foreground = Color.white
 
-  static let idle = WidgetSnapshot(state: .idle, title: "JellyBox", artist: "Nothing playing")
+  static let idle = WidgetSnapshot(state: .idle, title: "Orpheus", artist: "Nothing playing")
 
   static let signedOut = WidgetSnapshot(
     state: .signedOut,
-    title: "JellyBox",
+    title: "Orpheus",
     artist: "Sign in to start listening"
   )
 

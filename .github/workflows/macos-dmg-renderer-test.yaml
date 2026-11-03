@@ -148,13 +148,13 @@ jobs:
           set -euo pipefail
           APP="$(ls -d build/macos/Build/Products/Release/*.app | head -1)"
           APP_NAME="$(basename "$APP")"
-          DMG="JellyBox-${{ steps.version.outputs.version }}-${{ steps.version.outputs.renderer }}-test.dmg"
+          DMG="Orpheus-${{ steps.version.outputs.version }}-${{ steps.version.outputs.renderer }}-test.dmg"
 
           STAGING="$(mktemp -d)"
           cp -R "$APP" "$STAGING/"
 
           create-dmg \
-            --volname "JellyBox" \
+            --volname "Orpheus" \
             --window-pos 200 120 \
             --window-size 660 420 \
             --icon-size 120 \
@@ -188,7 +188,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jellybox-macos-dmg-${{ steps.version.outputs.renderer }}-test
+          name: orpheus-macos-dmg-${{ steps.version.outputs.renderer }}-test
           path: ${{ env.DMG }}
 
       - name: Attach to release

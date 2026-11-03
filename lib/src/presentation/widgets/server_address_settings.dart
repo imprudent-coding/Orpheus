@@ -354,7 +354,7 @@ class _RemoteAddressFormState extends ConsumerState<RemoteAddressForm> {
           const SizedBox(height: 8),
           Text(
             'A second address for the same server, such as a Tailscale, '
-            'WireGuard or reverse proxy URL. Jellybox uses the home address '
+            'WireGuard or reverse proxy URL. Orpheus uses the home address '
             'when it answers and switches to this one when it does not.',
             style: TextStyle(
               fontSize: 14,
