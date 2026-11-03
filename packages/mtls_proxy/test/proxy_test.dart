@@ -110,6 +110,15 @@ void main() {
       }
     });
 
+    test('- redacts the token from log messages', () async {
+      final proxied = await via('/Audio/1/stream');
+      final message = proxy.redact('Source error: $proxied (404)');
+
+      expect(message, isNot(contains(proxy.server.token.value)));
+      expect(message, contains('<proxy-token>'));
+      expect(proxy.redact('nothing secret'), 'nothing secret');
+    });
+
     test('- presents the certificate only to configured hosts', () {
       expect(
         proxy.contextFor('127.0.0.1', upstream.port, pinned: false),
@@ -655,6 +664,24 @@ void main() {
       expect(await readText(second), 'two');
       expect(other.lastClientSubject, contains('orpheus-other-client'));
       expect(upstream.lastClientSubject, contains('orpheus-test-client'));
+    });
+
+    test('- trusts a private CA once it is set, and not after', () async {
+      await proxy.setCustomCa('server-1', null);
+      answer('/ca', 'verified');
+
+      expect((await send(client, await via('/ca'))).statusCode, 502);
+      expect(proxy.hasCustomCa('server-1'), isFalse);
+
+      await proxy.setCustomCa('server-1', Fixtures.bytes('ca.pem'));
+
+      final response = await send(client, await via('/ca'));
+      expect(response.statusCode, 200);
+      expect(await readText(response), 'verified');
+      expect(
+        (await CertificateStore(storage).load('server-1'))?.certificate.caPem,
+        isNotNull,
+      );
     });
 
     test('- covers every address of a connection', () async {
