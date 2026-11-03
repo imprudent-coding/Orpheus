@@ -16,7 +16,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ORPHEUS: TestFlight needs an App Store Connect API key and a fastlane match
+  # repository. Without them the upload is skipped instead of failing the
+  # release. See SYNC.md for the secrets to configure.
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_P8_KEY_CONTENT: ${{ secrets.APPSTORE_P8_KEY_CONTENT }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          GIT_AUTHORIZATION: ${{ secrets.GIT_AUTHORIZATION }}
+        run: |
+          if [ -n "$APPSTORE_KEY_ID" ] && [ -n "$APPSTORE_P8_KEY_CONTENT" ] \
+             && [ -n "$MATCH_PASSWORD" ] && [ -n "$GIT_AUTHORIZATION" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::App Store Connect / match secrets are not configured; skipping TestFlight."
+          fi
+
   build:
+    needs: gate
+    if: ${{ needs.gate.outputs.enabled == 'true' }}
     runs-on: macos-latest
     defaults:
       run:

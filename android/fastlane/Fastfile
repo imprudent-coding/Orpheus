@@ -13,8 +13,15 @@ UNIVERSAL_APK_PATH = File.join(PROJECT_ROOT, "build/app/outputs/universal/orpheu
 
 def create_upload_key
   if ENV["ANDROID_KEYSTORE_ENV_VAR"].to_s.empty?
-    UI.user_error!("ANDROID_KEYSTORE_ENV_VAR is unset and android/key.properties does not exist") unless File.exist?(KEY_PROPERTIES_PATH)
-    UI.message("Signing with the existing android/key.properties")
+    if File.exist?(KEY_PROPERTIES_PATH)
+      UI.message("Signing with the existing android/key.properties")
+    else
+      # ORPHEUS: build anyway; android/app/build.gradle falls back to the debug
+      # key. A debug-signed APK cannot be updated in place by one signed with
+      # another key, so configure the keystore secrets for real releases.
+      UI.important("No release keystore configured: signing with the debug key")
+      puts "::warning::No release keystore configured; the APK is signed with a throwaway debug key."
+    end
     return
   end
 

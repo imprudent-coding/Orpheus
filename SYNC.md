@@ -126,3 +126,59 @@ New files: `NOTICE`, `SYNC.md`.
 | tests | Relay/review/telemetry tests removed; failover tests now use the manual remote address. |
 
 New file: `tool/check_no_jellybox_app.sh`.
+
+### Commit 3: update checker and release workflows
+
+| File | Why |
+|---|---|
+| `lib/src/config/constants.dart` | `orpheusGitHubRepository = 'imprudent-coding/Orpheus'`, the single place that names the repo; `updatifyProjectId` removed. |
+| `lib/src/core/updates/release_checker.dart` | Uses the fork's repo; can read release notes; Windows links `windows-setup.exe`. |
+| `lib/src/presentation/widgets/updatify_bell.dart` | Same class name, now opens the GitHub release notes; the dot marks an available update. |
+| `lib/src/presentation/pages/main_page.dart`, `settings_page.dart` | Changelog dialog instead of updatify popup/sheet. |
+| `pubspec.yaml`, `pubspec.lock` | `updatify_flutter` removed. |
+| `android/fastlane/Fastfile` | Builds with the debug key (with a warning) when no keystore is configured. |
+| `.github/workflows/android-beta.yaml` | Play upload only when `PLAY_SERVICE_ACCOUNT_JSON` is set. |
+| `.github/workflows/{ios,macos}-beta.yaml` | TestFlight skipped when the App Store Connect / match secrets are missing. |
+| `.github/workflows/macos-dmg.yaml` | Developer ID signing + notarization only with secrets; otherwise ad-hoc signed DMG. |
+| `.github/workflows/macos-dmg-renderer-test.yaml` | Deleted (manual upstream diagnostic that needs upstream's Apple secrets). |
+| tests | Release checker tests use the fork's repo and asset names and a mocked GitHub API. |
+
+New files: `lib/src/domain/providers/changelog_provider.dart`,
+`lib/src/presentation/widgets/changelog_dialog.dart`,
+`test/domain/providers/changelog_provider_test.dart`.
+
+## Release assets the update checker expects
+
+The checker reads `GET /repos/imprudent-coding/Orpheus/releases/latest`,
+ignores drafts and prereleases, compares `tag_name` (`v1.2.3`, an optional
+`+build` is ignored) with the installed version, and links:
+
+| Platform | Asset it looks for | Produced by |
+|---|---|---|
+| Android | first asset ending in `.apk` | `android-beta.yaml` → `orpheus-universal.apk` |
+| macOS (DMG build) | first asset ending in `.dmg` | `macos-dmg.yaml` → `Orpheus-<version>.dmg` |
+| Windows | first asset ending in `.exe` | `windows-release.yaml` → `windows-setup.exe` |
+| Linux | none, opens the release page | `linux-release.yaml` → `orpheus-linux-*.{tar.gz,AppImage,deb,rpm}` |
+| iOS / App Store builds | no update check | |
+
+Only builds made with `--dart-define=JELLYBOX_SIDELOAD=true` check for updates
+(the Linux, Windows, macOS DMG workflows and the Android APK lane set it).
+The changelog shows the release body of the tag matching the installed
+version (`v<version>`), falling back to the latest release.
+
+## Release workflow configuration
+
+`release.yaml` (tag push `v*` or manual dispatch) creates a draft release,
+runs every platform leg, and publishes the release when all legs succeed.
+Linux, Windows, Android (debug-signed) and macOS (ad-hoc signed) build with
+no secrets at all. Configure these for proper releases:
+
+| Secret / variable | Used for |
+|---|---|
+| `ANDROID_KEYSTORE_ENV_VAR` (base64 .jks), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` | Stable Android signing. Without them every CI run uses a new debug key and users cannot update in place. |
+| `PLAY_SERVICE_ACCOUNT_JSON`, vars `PACKAGE_NAME`, `PLAY_TRACK` | Optional Play upload. |
+| `APPSTORE_P8_KEY_CONTENT` (base64), `APPSTORE_KEY_ID`, `APPSTORE_KEY_ISSUER_ID` | Notarization and TestFlight. |
+| `MATCH_PASSWORD`, `GIT_AUTHORIZATION`, vars `GIT_USERNAME`, `GIT_REPOSITORY` | fastlane match repository with your Developer ID / App Store certificates. |
+| vars `APP_IDENTIFIER` (`com.github.imprudentcoding.orpheus`), `APPLE_ID`, `TEAM_ID`, `ITC_TEAM_ID` | fastlane / App Store Connect. Also set `DEVELOPMENT_TEAM` in the Xcode projects to your team (upstream's `RVM9F3VSHV` is still there). |
+
+`GITHUB_TOKEN` is provided automatically.

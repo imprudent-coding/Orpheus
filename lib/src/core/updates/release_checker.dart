@@ -1,10 +1,24 @@
 import 'package:dio/dio.dart';
+import 'package:jplayer/src/config/constants.dart';
 
 class AvailableUpdate {
   const AvailableUpdate({required this.version, required this.url});
 
   final String version;
   final Uri url;
+}
+
+/// ORPHEUS: release notes of one GitHub release, shown as the changelog.
+class ReleaseNotes {
+  const ReleaseNotes({
+    required this.version,
+    required this.body,
+    required this.page,
+  });
+
+  final String version;
+  final String body;
+  final Uri? page;
 }
 
 enum DownloadPlatform { android, macos, windows, linux }
@@ -22,7 +36,8 @@ class ReleaseChecker {
             ),
           );
 
-  static const defaultRepository = 'avdept/JellyBoxPlayer';
+  // ORPHEUS: the fork's releases, never upstream's.
+  static const String defaultRepository = orpheusGitHubRepository;
   static const _timeout = Duration(seconds: 20);
 
   final String repository;
@@ -39,6 +54,36 @@ class ReleaseChecker {
       response.data,
       currentVersion: currentVersion,
       platform: platform,
+    );
+  }
+
+  /// ORPHEUS: notes of the release tagged [version] (with or without a
+  /// leading v), or of the latest release when that tag has none.
+  Future<ReleaseNotes?> notes({required String version}) async {
+    final tag = 'v${normalizeVersion(version)}';
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        'https://api.github.com/repos/$repository/releases/tags/$tag',
+      );
+      return parseNotes(response.data);
+    } on DioException catch (error) {
+      if (error.response?.statusCode != 404) rethrow;
+    }
+    final latest = await _dio.get<Map<String, dynamic>>(
+      'https://api.github.com/repos/$repository/releases/latest',
+    );
+    return parseNotes(latest.data);
+  }
+
+  static ReleaseNotes? parseNotes(Map<String, dynamic>? data) {
+    if (data == null || data['draft'] == true) return null;
+    final tag = data['tag_name'];
+    if (tag is! String) return null;
+    final body = data['body'];
+    return ReleaseNotes(
+      version: normalizeVersion(tag),
+      body: body is String ? body.trim() : '',
+      page: _uri(data['html_url']),
     );
   }
 
@@ -63,7 +108,9 @@ class ReleaseChecker {
     final extension = switch (platform) {
       DownloadPlatform.android => '.apk',
       DownloadPlatform.macos => '.dmg',
-      DownloadPlatform.windows || DownloadPlatform.linux => null,
+      // ORPHEUS: the fork's Windows installer is attached as windows-setup.exe.
+      DownloadPlatform.windows => '.exe',
+      DownloadPlatform.linux => null,
     };
     if (extension == null || assets is! List) return null;
     for (final asset in assets) {

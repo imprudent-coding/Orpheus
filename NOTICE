@@ -36,3 +36,8 @@ Summary of changes in this fork
   opt-out setting and the "share device list with the developer" button.
 - Removed the in-app store review prompt (in_app_review).
 - Disabled Discord Rich Presence (it used the JellyBox Discord application).
+- The update checker and the changelog read the GitHub releases of this
+  fork (imprudent-coding/Orpheus), never upstream's. The hosted updatify.io
+  changelog is replaced by the release notes of those GitHub releases.
+- Release workflows build without upstream's signing/store secrets: store
+  uploads and notarization are skipped when their secrets are missing.
