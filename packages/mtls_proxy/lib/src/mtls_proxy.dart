@@ -182,6 +182,23 @@ class MtlsProxy extends ChangeNotifier implements ProxyRoutes {
     _changed();
   }
 
+  /// Sets (or with null, removes) the private CA used to verify the servers
+  /// of [connectionId], keeping its client certificate.
+  Future<void> setCustomCa(String connectionId, Uint8List? caPem) async {
+    final entry = _entries[connectionId];
+    if (entry == null) return;
+    if (caPem != null) CertificateInspector.validateCaPem(caPem);
+    final certificate = entry.connection.certificate.withCaPem(caPem);
+    final connection = entry.connection.copyWith(certificate: certificate);
+    if (entry.persisted) await _store?.save(connection);
+    _entries[connectionId] = _Entry(
+      connection,
+      ConnectionSecurity(certificate),
+      persisted: entry.persisted,
+    )..details = entry.details;
+    _changed();
+  }
+
   Future<void> remove(String connectionId) async {
     final entry = _entries.remove(connectionId);
     await _store?.remove(connectionId);
@@ -256,6 +273,15 @@ class MtlsProxy extends ChangeNotifier implements ProxyRoutes {
   Future<void> ensureRunning({bool force = false}) async {
     if (_entries.isEmpty) return;
     await _server.ensureRunning(force: force);
+  }
+
+  /// [message] with the proxy token replaced, for anything that might quote
+  /// a proxy URL (player error messages, for example) before it is logged.
+  String redact(String message) {
+    final token = _server.token.value;
+    return message.contains(token)
+        ? message.replaceAll(token, '<proxy-token>')
+        : message;
   }
 
   /// An [HttpClient] that presents the client certificate to configured
