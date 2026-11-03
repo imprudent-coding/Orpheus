@@ -331,6 +331,12 @@ class _AppState extends ConsumerState<App>
                       name: Routes.support.name,
                       pageBuilder: widget.screenFactory.supportPage,
                     ),
+                    // ORPHEUS: Lyra music requests.
+                    GoRoute(
+                      path: Routes.lyra.path,
+                      name: Routes.lyra.name,
+                      pageBuilder: widget.screenFactory.lyraPage,
+                    ),
                   ],
                 ),
               ],

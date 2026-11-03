@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:jplayer/resources/j_player_icons.dart';
 import 'package:jplayer/src/config/routes.dart';
 import 'package:jplayer/src/domain/providers/providers.dart';
+import 'package:jplayer/src/orpheus/lyra/lyra_providers.dart';
+import 'package:jplayer/src/orpheus/lyra/lyra_settings.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
 import 'package:jplayer/src/presentation/widgets/changelog_dialog.dart';
 import 'package:jplayer/src/presentation/widgets/widgets.dart';
@@ -61,6 +63,24 @@ class _MainPageState extends ConsumerState<MainPage> {
 
     return RailTooltip(
       message: 'Support',
+      enabled: collapsed,
+      child: button,
+    );
+  }
+
+  // ORPHEUS: Lyra music requests, when the current server has a Lyra address.
+  Widget _lyraButton(bool collapsed) {
+    final button = RailItemButton(
+      onPressed: () => openLyra(context),
+      icon: const Icon(Icons.library_add_outlined),
+      label: const Text('Request music'),
+      foregroundColor: _theme.colorScheme.onPrimary,
+      fontSize: 16,
+      horizontalPadding: 30,
+    );
+
+    return RailTooltip(
+      message: 'Request music',
       enabled: collapsed,
       child: button,
     );
@@ -162,6 +182,8 @@ class _MainPageState extends ConsumerState<MainPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (ref.watch(lyraUrlProvider) != null)
+                        _lyraButton(sidebarCollapsed), // ORPHEUS: Lyra
                       _supportButton(sidebarCollapsed),
                       _logoutButton(sidebarCollapsed),
                     ],

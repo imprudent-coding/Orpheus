@@ -212,6 +212,46 @@ settings section, login section), `test/orpheus/mtls_integration_test.dart`,
 | `macos/Runner/{Debug,Release}.entitlements` | `files.user-selected.read-only` for the file picker in the sandboxed build (`network.server` was already there). |
 | `ios/Runner/Info.plist`, `macos/Runner/Info.plist` | Comment only: why `NSAllowsLocalNetworking` must not be added. |
 
+### Commit 6: Lyra music requests
+
+New app files (fork-owned): `lib/src/orpheus/lyra/` (`lyra_client.dart` API
+client, `lyra_providers.dart` settings and state, `lyra_settings.dart`
+settings section, `lyra_page.dart` search and requests page) and
+`test/orpheus/lyra_test.dart`. In `packages/mtls_proxy`, `MtlsProxy.attachUrls`
+presents a connection's certificate to extra URLs (in memory only).
+
+| Upstream file | Hook |
+|---|---|
+| `lib/src/config/routes.dart` | `Routes.lyra`. |
+| `lib/src/app.dart`, `lib/src/screen_factory.dart` | `/settings/lyra` route and its page, next to Support. |
+| `lib/src/presentation/pages/settings_page.dart` | "Lyra" section after the client certificate. |
+| `lib/src/presentation/pages/main_page.dart` | "Request music" in the desktop sidebar when the current server has a Lyra address (mobile: Settings > Lyra). |
+
+`lib/src/orpheus/mtls_integration.dart` calls `attachLyraCertificates()` from
+`initOrpheusMtls`.
+
+## How Lyra is wired
+
+Lyra ([imprudent-coding/streamrip](https://github.com/imprudent-coding/streamrip))
+searches streaming catalogues and queues downloads for the beets import. Its
+app API (`/api/v1/`) has no authentication of its own: it sits behind the same
+reverse proxy as the media server and offers only what Lyra's web UI allows
+without signing in (default quality; whole-artist downloads only when Lyra
+allows them publicly).
+
+- **Address.** Set per server account under Settings > Lyra, stored in
+  SharedPreferences (`orpheus_lyra_urls`, server ID to URL).
+- **Certificate.** Lyra reuses its server's client certificate:
+  `attachLyraCertificates` attaches the Lyra URL to that connection with
+  `MtlsProxy.attachUrls`, apart from the connection's own addresses, so
+  account syncs and replacing the certificate keep it. Requests are plain Dio
+  calls, so the `HttpOverrides` hook presents the certificate; the loopback
+  proxy and its token are not involved.
+- **Requests** are polled every 5 seconds while the Requests tab is open.
+  Lyra keeps finished requests in memory (the last 50) until it restarts. A
+  completed request is in Lyra's staging folder; it reaches the library after
+  the beets import and a library scan.
+
 ## How mTLS is wired
 
 - **Storage.** The real server URLs stay in every store, exactly as upstream

@@ -15,6 +15,8 @@ enum Routes {
   palette('palette'),
   queueCache('queue-cache'),
   support('support'),
+  // ORPHEUS: Lyra music requests (lib/src/orpheus/lyra/).
+  lyra('lyra'),
   searchResults('search-results'),
   playlist('playlist'),
   favourites('favourites'),

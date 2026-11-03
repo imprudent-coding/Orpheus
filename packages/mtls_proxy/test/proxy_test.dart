@@ -131,6 +131,64 @@ void main() {
       expect(proxy.contextFor('lrclib.net', 443, pinned: false), isNull);
       expect(proxy.contextFor('api.github.com', 443, pinned: false), isNull);
     });
+
+    test('- presents the certificate to attached URLs as well', () async {
+      var changes = 0;
+      proxy
+        ..addListener(() => changes++)
+        ..attachUrls('server-1', ['https://lyra.example.test/']);
+      expect(changes, 1);
+      expect(
+        proxy.contextFor('lyra.example.test', 443, pinned: false),
+        isNotNull,
+      );
+      expect(proxy.appliesToUrl('https://lyra.example.test/api/v1/info'), true);
+      expect(proxy.attachedUrls('server-1'), ['https://lyra.example.test/']);
+
+      // The connection's own addresses can change without dropping them.
+      await proxy.setServerUrls('server-1', [upstream.url, '${upstream.url}/']);
+      expect(
+        proxy.contextFor('lyra.example.test', 443, pinned: false),
+        isNotNull,
+      );
+
+      // Attaching the same URLs again changes nothing.
+      proxy.attachUrls('server-1', [' https://lyra.example.test/ ']);
+      expect(changes, 2);
+
+      proxy.attachUrls('server-1', const []);
+      expect(proxy.contextFor('lyra.example.test', 443, pinned: false), isNull);
+      expect(proxy.attachedUrls('server-1'), isEmpty);
+      expect(
+        proxy.contextFor('127.0.0.1', upstream.port, pinned: false),
+        isNotNull,
+      );
+    });
+
+    test(
+      '- applies attached URLs once the connection has a certificate',
+      () async {
+        proxy.attachUrls('server-2', ['https://lyra.example.test']);
+        expect(
+          proxy.contextFor('lyra.example.test', 443, pinned: false),
+          isNull,
+        );
+        await proxy.install(
+          'server-2',
+          certificate: Fixtures.client(),
+          serverUrls: ['https://jellyfin.example.test'],
+        );
+        expect(
+          proxy.contextFor('lyra.example.test', 443, pinned: false),
+          isNotNull,
+        );
+        await proxy.remove('server-2');
+        expect(
+          proxy.contextFor('lyra.example.test', 443, pinned: false),
+          isNull,
+        );
+      },
+    );
   });
 
   group('forwarding', () {
