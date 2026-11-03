@@ -49,3 +49,7 @@ Summary of changes in this fork
   settings, client certificates for every request to the configured
   servers, the loopback proxy for the native player and downloader, and
   Cast/DLNA disabled for servers that need a client certificate.
+- Added music requests through Lyra (imprudent-coding/streamrip): a Lyra
+  address per server under Settings > Lyra, a page to search streaming
+  catalogues, request downloads and follow them, with Lyra reached using
+  its server's client certificate.

@@ -60,6 +60,7 @@ class MtlsProxy extends ChangeNotifier implements ProxyRoutes {
   AppLifecycleListener? _lifecycle;
 
   final _entries = <String, _Entry>{};
+  final _attachedUrls = <String, List<String>>{};
   final _routeIds = <ServerOrigin, String>{};
   final _routesById = <String, ProxyRoute>{};
   final _routesByOrigin = <ServerOrigin, ProxyRoute>{};
@@ -198,6 +199,30 @@ class MtlsProxy extends ChangeNotifier implements ProxyRoutes {
     )..details = entry.details;
     _changed();
   }
+
+  /// Presents [connectionId]'s certificate to [urls] too: other services
+  /// behind the same reverse proxy (for example a music request service on
+  /// its own host) that accept the same client certificate.
+  ///
+  /// Kept in memory only and apart from the connection's own addresses, so
+  /// [setServerUrls], [install] and replacing the certificate leave them in
+  /// place. The app attaches them again after every launch. They take effect
+  /// while [connectionId] has a certificate; an empty list detaches them.
+  void attachUrls(String connectionId, Iterable<String> urls) {
+    final normalized = _normalized(urls);
+    final current = _attachedUrls[connectionId] ?? const <String>[];
+    if (listEquals(normalized, current)) return;
+    if (normalized.isEmpty) {
+      _attachedUrls.remove(connectionId);
+    } else {
+      _attachedUrls[connectionId] = normalized;
+    }
+    if (_entries.containsKey(connectionId)) _changed();
+  }
+
+  /// The URLs attached to [connectionId] with [attachUrls].
+  List<String> attachedUrls(String connectionId) =>
+      List.unmodifiable(_attachedUrls[connectionId] ?? const <String>[]);
 
   Future<void> remove(String connectionId) async {
     final entry = _entries.remove(connectionId);
@@ -373,15 +398,20 @@ class MtlsProxy extends ChangeNotifier implements ProxyRoutes {
     _routesByOrigin.clear();
     // Later entries win when two connections claim the same host, so a
     // freshly staged certificate takes precedence while a server is added.
-    for (final entry in _entries.values) {
-      for (final origin in _originsOf(entry.connection)) {
-        final id = _routeIds.putIfAbsent(origin, _newRouteId);
+    for (final MapEntry(key: id, value: entry) in _entries.entries) {
+      final origins = {
+        ..._originsOf(entry.connection),
+        for (final url in _attachedUrls[id] ?? const <String>[])
+          ?ServerOrigin.parse(url),
+      };
+      for (final origin in origins) {
+        final routeId = _routeIds.putIfAbsent(origin, _newRouteId);
         final route = ProxyRoute(
-          id: id,
+          id: routeId,
           origin: origin,
           security: entry.security,
         );
-        _routesById[id] = route;
+        _routesById[routeId] = route;
         _routesByOrigin[origin] = route;
       }
     }

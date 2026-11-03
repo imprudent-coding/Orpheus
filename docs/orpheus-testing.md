@@ -43,6 +43,23 @@ Everything below needs real devices and a real server.
 | 18 | Check the device log (Support → Send the app log) | No token, no `127.0.0.1:<port>/<token>` URLs, no certificate data |
 | 19 | Restart the app | Certificate still there; playback works (new token) |
 
+## Lyra (music requests)
+
+Lyra behind the same reverse proxy (and client CA) as server A.
+
+| # | Step | Expected |
+|---|---|---|
+| L1 | Settings → Lyra, enter the address without `https://`, Save and test | Saved with `https://` and a trailing slash; "Connected. Sources: …" |
+| L2 | Same with server A's certificate removed | "Saved, but the test failed: Lyra's reverse proxy refused the connection: it needs this server's client certificate…" |
+| L3 | Import the certificate again | Test succeeds without re-entering the address |
+| L4 | Enter an address with no Lyra (for example the Jellyfin URL) | "No Lyra app API at this address…" or "answered, but not like Lyra" |
+| L5 | Desktop: sidebar shows "Request music"; mobile: Settings → Lyra → Request music | Request page opens |
+| L6 | Search an album on each source; switch type chips | Results with covers; Artists chip only when Lyra allows public artist downloads |
+| L7 | Request an album | Check mark, snackbar; Requests tab shows it queued, then Downloading, then "Downloaded, waiting for import" |
+| L8 | Request something that fails (for example a removed release) | Shows Failed with Lyra's message |
+| L9 | Switch to server B (no Lyra) | Sidebar entry gone; Settings → Lyra is empty |
+| L10 | Restart Orpheus | Address kept; requests still visible until Lyra restarts |
+
 ## Android
 
 - Background playback with the screen off for 10+ minutes, then skip tracks.

@@ -1,6 +1,7 @@
 > [!NOTE]
 > **This is Orpheus, a modified fork of [JellyBox](https://github.com/avdept/JellyBoxPlayer).**
-> It adds client-certificate (mTLS) support through an in-app loopback proxy, and removes
+> It adds client-certificate (mTLS) support through an in-app loopback proxy, music requests
+> through [Lyra](https://github.com/imprudent-coding/streamrip) (Settings > Lyra), and removes
 > the JellyBox cloud relay, Sentry, Plausible and the store review prompt.
 > Updates are checked against [this fork's releases](https://github.com/imprudent-coding/Orpheus/releases).
 > See [NOTICE](./NOTICE) for the full list of changes and [SYNC.md](./SYNC.md) for how the fork

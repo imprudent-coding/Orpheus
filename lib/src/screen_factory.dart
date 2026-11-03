@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jplayer/src/core/enums/enums.dart';
 import 'package:jplayer/src/domain/models/models.dart' hide LibraryPage;
+import 'package:jplayer/src/orpheus/lyra/lyra_page.dart';
 import 'package:jplayer/src/presentation/pages/pages.dart';
 
 class ScreenFactory {
@@ -232,6 +233,16 @@ class ScreenFactory {
   ) {
     return const NoTransitionPage(
       child: SettingsPage(),
+    );
+  }
+
+  // ORPHEUS: Lyra music requests.
+  Page<void> lyraPage(
+    BuildContext context,
+    GoRouterState router,
+  ) {
+    return const CupertinoPage(
+      child: LyraPage(),
     );
   }
 

@@ -14,6 +14,7 @@ import 'package:jplayer/src/data/providers/secure_storage_provider.dart';
 import 'package:jplayer/src/data/storages/account_store.dart';
 import 'package:jplayer/src/domain/models/models.dart';
 import 'package:jplayer/src/domain/playback/playback_target.dart';
+import 'package:jplayer/src/orpheus/lyra/lyra_providers.dart';
 import 'package:jplayer/src/providers/accounts_provider.dart';
 import 'package:jplayer/src/providers/base_url_provider.dart';
 import 'package:jplayer/src/providers/current_server_id_provider.dart';
@@ -78,6 +79,8 @@ Future<void> initOrpheusMtls(ProviderContainer container) async {
       if (addresses == null || serverId == null) return;
       unawaited(proxy.setServerUrls(serverId, addresses.candidates));
     });
+  // Lyra (music requests) shares its server's client certificate.
+  attachLyraCertificates(container, proxy);
   unawaited(_cancelStaleProxyDownloads());
 }
 
