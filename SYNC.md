@@ -225,7 +225,21 @@ presents a connection's certificate to extra URLs (in memory only).
 | `lib/src/config/routes.dart` | `Routes.lyra`. |
 | `lib/src/app.dart`, `lib/src/screen_factory.dart` | `/settings/lyra` route and its page, next to Support. |
 | `lib/src/presentation/pages/settings_page.dart` | "Lyra" section after the client certificate. |
-| `lib/src/presentation/pages/main_page.dart` | "Request music" in the desktop sidebar when the current server has a Lyra address (mobile: Settings > Lyra). |
+| `lib/src/presentation/pages/main_page.dart` | "Request music" in the desktop sidebar when the current server has a Lyra address. |
+| `lib/src/config/routes.dart`, `lib/src/app.dart` | `Routes.browseLyra`: the same page under Browse, so opening it from Browse stays in that tab (`openLyra` picks the route by the current location). |
+| `lib/src/presentation/pages/browse_page.dart` | Lyra button in the search field's suffix, next to close (`LyraSearchButton`). |
+| `lib/src/presentation/widgets/search_results_sliver.dart` | "Not in your library? Search Lyra for …" below the results and below "Nothing found" (`LyraSearchSuggestion`). |
+
+New file: `lib/src/orpheus/lyra/lyra_entry.dart`.
+
+### Lyrics blur and size settings
+
+| Upstream file | Hook |
+|---|---|
+| `lib/src/core/enums/lyrics_size.dart` (new), `enums.dart` | `LyricsSize` with its scale factor. |
+| `lib/src/domain/providers/app_settings_provider.dart` | `AppSetting.lyricsBlur` (default on), `AppSetting.lyricsSize` (default medium), `lyricsSizeProvider`. |
+| `lib/src/presentation/widgets/lyrics_overlay.dart` | `_LyricsBody._line`: no blur when turned off; font size times the scale. Covers every lyrics view (bottom player, overlay, landscape, Studio Mode). |
+| `lib/src/presentation/pages/settings_page.dart` | "Lyrics text size" and "Blur lines around the current one" in the Lyrics section. |
 
 `lib/src/orpheus/mtls_integration.dart` calls `attachLyraCertificates()` from
 `initOrpheusMtls`.

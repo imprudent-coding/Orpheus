@@ -54,11 +54,20 @@ Lyra behind the same reverse proxy (and client CA) as server A.
 | L3 | Import the certificate again | Test succeeds without re-entering the address |
 | L4 | Enter an address with no Lyra (for example the Jellyfin URL) | "No Lyra app API at this address…" or "answered, but not like Lyra" |
 | L5 | Desktop: sidebar shows "Request music"; mobile: Settings → Lyra → Request music | Request page opens |
+| L5a | Browse → search "something not in the library" | Below "Nothing found": "Not in your library? Search Lyra for …"; tapping it opens the request page, already searching, with Browse still selected in the tab bar; Back returns to Browse |
+| L5b | Browse → search, tap the Lyra button in the search field | Same, with the typed text; with results, the suggestion is also below them |
 | L6 | Search an album on each source; switch type chips | Results with covers; Artists chip only when Lyra allows public artist downloads |
 | L7 | Request an album | Check mark, snackbar; Requests tab shows it queued, then Downloading, then "Downloaded, waiting for import" |
 | L8 | Request something that fails (for example a removed release) | Shows Failed with Lyra's message |
-| L9 | Switch to server B (no Lyra) | Sidebar entry gone; Settings → Lyra is empty |
+| L9 | Switch to server B (no Lyra) | Sidebar entry, search field button and suggestion gone; Settings → Lyra is empty |
 | L10 | Restart Orpheus | Address kept; requests still visible until Lyra restarts |
+
+## Lyrics settings
+
+| # | Step | Expected |
+|---|---|---|
+| Y1 | Play a song with synced lyrics; Settings → Lyrics → turn off "Blur lines around the current one" | Every line is sharp; the current line is still highlighted, the others still dimmed |
+| Y2 | Change "Lyrics text size" through Small … Extra large | Lyrics resize at once in the bottom player, the desktop overlay, landscape and Studio Mode; the current line stays centred |
 
 ## Android
 

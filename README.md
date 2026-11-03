@@ -55,7 +55,7 @@ Keep your music server behind a reverse proxy (Caddy, nginx, Traefik…) that on
 [Lyra](https://github.com/imprudent-coding/streamrip) is a small self-hosted service that searches streaming catalogues and queues downloads for import into your library.
 
 - Set its address under **Settings → Lyra** (one per server). Lyra sits behind the same reverse proxy and gets the same client certificate.
-- **Request music** (in the desktop sidebar, or under Settings → Lyra on mobile): search Qobuz, Tidal, Deezer or SoundCloud, then request an album, track or playlist with one tap.
+- **Request music** from the library search in Browse: the Lyra button in the search field, or "Not in your library? Search Lyra" below the results, opens Lyra already searching for what you typed. It is also in the desktop sidebar and under Settings → Lyra. Search Qobuz, Tidal, Deezer or SoundCloud, then request an album, track or playlist with one tap.
 - The **Requests** tab follows each request from queued to downloaded. A downloaded release shows up in your library after the import and the next library scan.
 
 ### Privacy
@@ -80,7 +80,7 @@ Orpheus removes the JellyBox cloud relay and continuity service, Sentry crash re
 
 **Playback**
 - Queue and position remembered between restarts
-- Time-synced lyrics
+- Time-synced lyrics, with adjustable text size and an optional blur around the current line
 - Shuffle, repeat and a random "surprise me" queue
 - Per-connection streaming profiles, with transcoding when a codec isn't supported natively
 - Audio quality badge showing whether you're getting the original file

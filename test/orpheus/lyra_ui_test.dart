@@ -3,7 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:jplayer/src/config/routes.dart';
+import 'package:jplayer/src/data/providers/search_provider.dart';
 import 'package:jplayer/src/orpheus/lyra/lyra_client.dart';
+import 'package:jplayer/src/orpheus/lyra/lyra_entry.dart';
 import 'package:jplayer/src/orpheus/lyra/lyra_page.dart';
 import 'package:jplayer/src/orpheus/lyra/lyra_providers.dart';
 import 'package:jplayer/src/orpheus/lyra/lyra_settings.dart';
@@ -246,4 +250,125 @@ void main() {
     expect(container.read(lyraUrlProvider), isNull);
     expect(find.text('Request music'), findsNothing);
   });
+
+  testWidgets('- searches right away for a query it was opened with', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createTestApp(
+        providerContainer: container(
+          lyraUrl: Uri.parse('https://lyra.example.com/'),
+        ),
+        home: const LyraPage(initialQuery: ' kid a '),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(client.searches, [('kid a', 'qobuz', 'album')]);
+    expect(find.text('Kid A'), findsOneWidget);
+  });
+
+  group('library search', () {
+    Future<GoRouter> pumpBrowse(
+      WidgetTester tester, {
+      required Uri? lyraUrl,
+      String? query,
+    }) async {
+      final providers = container(lyraUrl: lyraUrl);
+      providers.read(searchProvider.notifier).state = query;
+      final router = GoRouter(
+        initialLocation: '/browse',
+        routes: [
+          GoRoute(
+            path: '/browse',
+            name: Routes.browse.name,
+            builder: (context, state) => const Scaffold(
+              body: Column(
+                children: [
+                  LyraSearchSuggestion(),
+                  LyraSearchButtonHost(),
+                ],
+              ),
+            ),
+            routes: [
+              GoRoute(
+                path: Routes.browseLyra.path,
+                name: Routes.browseLyra.name,
+                builder: (context, state) => Text(
+                  'browse lyra: ${state.uri.queryParameters['q']}',
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/settings/lyra',
+            name: Routes.lyra.name,
+            builder: (context, state) => const Text('settings lyra'),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: providers,
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return router;
+    }
+
+    testWidgets('- offers Lyra and opens it in Browse with the query', (
+      tester,
+    ) async {
+      await pumpBrowse(
+        tester,
+        lyraUrl: Uri.parse('https://lyra.example.com/'),
+        query: 'kid a',
+      );
+      expect(
+        find.textContaining('Search Lyra for "kid a"', findRichText: true),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byType(LyraSearchSuggestion));
+      await tester.pumpAndSettle();
+      expect(find.text('browse lyra: kid a'), findsOneWidget);
+    });
+
+    testWidgets('- the search field button passes what is typed', (
+      tester,
+    ) async {
+      await pumpBrowse(
+        tester,
+        lyraUrl: Uri.parse('https://lyra.example.com/'),
+      );
+      await tester.tap(find.byTooltip('Request music with Lyra'));
+      await tester.pumpAndSettle();
+      expect(find.text('browse lyra: radiohead'), findsOneWidget);
+    });
+
+    testWidgets('- offers nothing without a Lyra address or a query', (
+      tester,
+    ) async {
+      await pumpBrowse(tester, lyraUrl: null, query: 'kid a');
+      expect(find.textContaining('Search Lyra'), findsNothing);
+      expect(find.byTooltip('Request music with Lyra'), findsNothing);
+
+      await pumpBrowse(
+        tester,
+        lyraUrl: Uri.parse('https://lyra.example.com/'),
+        query: '  ',
+      );
+      expect(find.textContaining('Search Lyra'), findsNothing);
+    });
+  });
+}
+
+/// Hosts [LyraSearchButton] as the Browse search field does.
+class LyraSearchButtonHost extends StatelessWidget {
+  const LyraSearchButtonHost({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      LyraSearchButton(query: () => 'radiohead');
 }

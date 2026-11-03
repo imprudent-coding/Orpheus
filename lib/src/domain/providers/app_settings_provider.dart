@@ -31,6 +31,9 @@ enum AppSetting {
   letterRuler('letter_ruler', defaultValue: true),
   artistBrowseScope('artist_browse_scope', defaultValue: 'allArtists'),
   lyricsAlignment('lyrics_alignment', defaultValue: 'center'),
+  // ORPHEUS: blur around the current line, and lyrics text size.
+  lyricsBlur('lyrics_blur', defaultValue: true),
+  lyricsSize('lyrics_size', defaultValue: 'medium'),
   lrclibLyrics('lrclib_lyrics', defaultValue: true),
   playerVolume('player_volume', defaultValue: 1.0),
   repeatMode('repeat_mode', defaultValue: 'off', syncs: false),
@@ -179,6 +182,16 @@ final lyricsAlignmentProvider = Provider<LyricsAlignment>(
         AppSetting.lyricsAlignment,
       )] ??
       LyricsAlignment.center,
+);
+
+// ORPHEUS: lyrics text size.
+final lyricsSizeProvider = Provider<LyricsSize>(
+  (ref) =>
+      LyricsSize.values.asNameMap()[_asString(
+        ref.watch(appSettingsProvider)[AppSetting.lyricsSize],
+        AppSetting.lyricsSize,
+      )] ??
+      LyricsSize.medium,
 );
 
 final playerTimeDisplayProvider = Provider<PlayerTimeDisplay>(

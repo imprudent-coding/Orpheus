@@ -6,6 +6,7 @@ import 'package:jplayer/src/core/enums/enums.dart';
 import 'package:jplayer/src/data/providers/providers.dart';
 import 'package:jplayer/src/domain/models/models.dart';
 import 'package:jplayer/src/domain/providers/providers.dart';
+import 'package:jplayer/src/orpheus/lyra/lyra_entry.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
 import 'package:jplayer/src/presentation/widgets/album_card_metrics.dart';
 import 'package:jplayer/src/presentation/widgets/album_view.dart';
@@ -61,14 +62,22 @@ class SearchResultsSliver extends ConsumerWidget {
       return SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Center(
-            child: Text(
-              hasError ? 'Search failed. Try again.' : 'Nothing found',
-              style: TextStyle(
-                fontSize: device.isMobile ? 14 : 16,
-                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.6),
+          child: Column(
+            children: [
+              Center(
+                child: Text(
+                  hasError ? 'Search failed. Try again.' : 'Nothing found',
+                  style: TextStyle(
+                    fontSize: device.isMobile ? 14 : 16,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withOpacity(0.6),
+                  ),
+                ),
               ),
-            ),
+              // ORPHEUS: offer Lyra when the library has nothing.
+              const LyraSearchSuggestion(),
+            ],
           ),
         ),
       );
@@ -85,6 +94,8 @@ class SearchResultsSliver extends ConsumerWidget {
             category: entry.key,
             items: entry.value.valueOrNull?.items ?? const [],
           ),
+        // ORPHEUS: offer Lyra below the library results too.
+        const SliverToBoxAdapter(child: LyraSearchSuggestion()),
       ],
     );
   }

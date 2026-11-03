@@ -241,8 +241,8 @@ class ScreenFactory {
     BuildContext context,
     GoRouterState router,
   ) {
-    return const CupertinoPage(
-      child: LyraPage(),
+    return CupertinoPage(
+      child: LyraPage(initialQuery: router.uri.queryParameters['q']),
     );
   }
 

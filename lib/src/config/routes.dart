@@ -17,6 +17,7 @@ enum Routes {
   support('support'),
   // ORPHEUS: Lyra music requests (lib/src/orpheus/lyra/).
   lyra('lyra'),
+  browseLyra('lyra'),
   searchResults('search-results'),
   playlist('playlist'),
   favourites('favourites'),
