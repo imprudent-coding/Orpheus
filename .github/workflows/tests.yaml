@@ -28,6 +28,14 @@ jobs:
       - name: App tests
         run: flutter test
 
+      # ORPHEUS: the mTLS package is held to a clean analysis.
+      - name: mtls_proxy package analysis and tests
+        working-directory: packages/mtls_proxy
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
       - name: optional_features package tests
         working-directory: packages/optional_features
         run: |
