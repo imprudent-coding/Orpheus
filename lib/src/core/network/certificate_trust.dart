@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:jplayer/src/config/constants.dart';
+import 'package:mtls_proxy/mtls_proxy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerCertificate {
@@ -182,10 +183,17 @@ class TrustedCertificateHttpOverrides extends HttpOverrides {
             return Socket.startConnect(uri.host, port);
           }
           final pinned = _trust.pinFor(uri.host, port) != null;
+          // ORPHEUS: present the client certificate (mTLS) to the hosts of
+          // the connection it belongs to, and to no other host.
+          final clientCertificate = MtlsProxy.instance.contextFor(
+            uri.host,
+            port,
+            pinned: pinned,
+          );
           return SecureSocket.startConnect(
             uri.host,
             port,
-            context: pinned ? _noRoots : context,
+            context: clientCertificate ?? (pinned ? _noRoots : context),
             onBadCertificate: (cert) => pinned
                 ? _trust.matchesPin(cert, uri.host, port)
                 : _trust.allows(cert, uri.host, port),

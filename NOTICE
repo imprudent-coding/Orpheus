@@ -44,3 +44,8 @@ Summary of changes in this fork
 - Added packages/mtls_proxy: client-certificate (mTLS) support with
   per-connection PKCS#12 storage in secure storage and a token-protected
   loopback reverse proxy for native players and downloaders.
+- Wired the mTLS support into the app at a few hook points marked
+  "ORPHEUS:": certificate import in the login page and the Connection
+  settings, client certificates for every request to the configured
+  servers, the loopback proxy for the native player and downloader, and
+  Cast/DLNA disabled for servers that need a client certificate.

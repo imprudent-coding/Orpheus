@@ -9,6 +9,7 @@ import 'package:jplayer/src/core/enums/download_status.dart';
 import 'package:jplayer/src/data/backend/media_server_client.dart';
 import 'package:jplayer/src/data/services/album_cover_store.dart';
 import 'package:jplayer/src/domain/models/models.dart';
+import 'package:jplayer/src/orpheus/mtls_integration.dart';
 import 'package:logging/logging.dart';
 
 const _secretQueryKeys = {'ApiKey', 'api_key', 'X-Emby-Token', 't', 's', 'p'};
@@ -101,9 +102,14 @@ class DownloadService {
   ) async {
     task.status.value = DownloadStatus.downloading;
 
+    // ORPHEUS: client-certificate servers download through the mTLS proxy
+    // (URL resolved now, never stored), or in the foreground on iOS.
+    if (downloadsInForeground(task.url)) {
+      return downloadTaskInForeground(task);
+    }
     final bdTask = bd.DownloadTask(
       taskId: task.id,
-      url: task.url,
+      url: await downloadUrlFor(task.url),
       filename: fileName,
       directory: 'music/$albumSubdir',
       baseDirectory: bd.BaseDirectory.applicationDocuments,
@@ -186,6 +192,7 @@ class DownloadService {
   Future<void> cancelDownload(String id) async {
     final task = _tasks[id];
     if (task != null) {
+      cancelForegroundDownload(id); // ORPHEUS: see downloadsInForeground.
       final bdTask = _bdTasks.remove(id);
       if (bdTask != null) {
         await bd.FileDownloader().cancelTasksWithIds([id]);

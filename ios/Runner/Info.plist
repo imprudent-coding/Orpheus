@@ -33,6 +33,10 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- ORPHEUS: NSAllowsArbitraryLoads already permits the plain-HTTP mTLS
+	     proxy on 127.0.0.1. Do not add NSAllowsLocalNetworking: when it is
+	     present, iOS/macOS ignore NSAllowsArbitraryLoads and plain-HTTP
+	     servers on public hostnames stop working. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

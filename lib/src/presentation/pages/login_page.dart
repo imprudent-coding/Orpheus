@@ -11,6 +11,8 @@ import 'package:jplayer/src/data/providers/providers.dart';
 import 'package:jplayer/src/data/services/server_probe_service.dart';
 import 'package:jplayer/src/data/storages/account_store.dart';
 import 'package:jplayer/src/domain/providers/discovered_servers_provider.dart';
+import 'package:jplayer/src/orpheus/client_certificate_ui.dart';
+import 'package:jplayer/src/orpheus/mtls_integration.dart';
 import 'package:jplayer/src/presentation/widgets/widgets.dart';
 import 'package:jplayer/src/providers/accounts_provider.dart';
 import 'package:jplayer/src/providers/auth_provider.dart';
@@ -279,9 +281,12 @@ class LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
     if (!mounted) return;
+    // ORPHEUS: explain a failure caused by a missing client certificate.
+    final message = await explainSignInFailure(resp, serverUri);
+    if (!mounted) return;
 
     setState(() {
-      error = resp;
+      error = message;
       _submitting = false;
     });
   }
@@ -360,6 +365,12 @@ class LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 63),
                       _serverURLField(),
+                      // ORPHEUS: client certificate for the server being added.
+                      LoginClientCertificate(
+                        serverUrl: () => _effectiveServerUrl,
+                        urlChanges: _serverUrlInputController,
+                        onChanged: _reprobeServer,
+                      ),
                       const SizedBox(height: 8),
                       _loginField(),
                       const SizedBox(height: 8),
