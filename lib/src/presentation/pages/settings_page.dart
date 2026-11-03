@@ -58,6 +58,14 @@ class SettingsPage extends ConsumerWidget {
     StudioLyricsPlacement.separate: 'Separate page',
   };
 
+  // ORPHEUS: lyrics size labels.
+  static const Map<LyricsSize, String> _lyricsSizeLabels = {
+    LyricsSize.small: 'Small',
+    LyricsSize.medium: 'Medium',
+    LyricsSize.large: 'Large',
+    LyricsSize.extraLarge: 'Extra large',
+  };
+
   static const Map<LyricsAlignment, String> _lyricsAlignmentLabels = {
     LyricsAlignment.left: 'Left',
     LyricsAlignment.center: 'Middle',
@@ -440,6 +448,21 @@ class SettingsPage extends ConsumerWidget {
                       onChanged: (value) => ref
                           .read(appSettingsProvider.notifier)
                           .setValue(AppSetting.lyricsAlignment, value.name),
+                    ),
+                    // ORPHEUS: lyrics size and blur.
+                    _settingDropdown<LyricsSize>(
+                      context: context,
+                      label: 'Lyrics text size',
+                      value: ref.watch(lyricsSizeProvider),
+                      options: _lyricsSizeLabels,
+                      onChanged: (value) => ref
+                          .read(appSettingsProvider.notifier)
+                          .setValue(AppSetting.lyricsSize, value.name),
+                    ),
+                    _settingCheckbox(
+                      ref: ref,
+                      setting: AppSetting.lyricsBlur,
+                      label: 'Blur lines around the current one',
                     ),
                     _settingCheckbox(
                       ref: ref,

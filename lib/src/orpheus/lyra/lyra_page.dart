@@ -26,7 +26,11 @@ const _sourceLabels = {
 String _sourceLabel(String source) => _sourceLabels[source] ?? source;
 
 class LyraPage extends ConsumerWidget {
-  const LyraPage({super.key});
+  const LyraPage({this.initialQuery, super.key});
+
+  /// Searched as soon as the page opens, for example the text of a library
+  /// search that found nothing.
+  final String? initialQuery;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,9 +86,12 @@ class LyraPage extends ConsumerWidget {
                       Tab(text: 'Requests'),
                     ],
                   ),
-                  const Expanded(
+                  Expanded(
                     child: TabBarView(
-                      children: [_SearchTab(), _RequestsTab()],
+                      children: [
+                        _SearchTab(initialQuery: initialQuery),
+                        const _RequestsTab(),
+                      ],
                     ),
                   ),
                 ],
@@ -98,7 +105,9 @@ class LyraPage extends ConsumerWidget {
 }
 
 class _SearchTab extends ConsumerStatefulWidget {
-  const _SearchTab();
+  const _SearchTab({this.initialQuery});
+
+  final String? initialQuery;
 
   @override
   ConsumerState<_SearchTab> createState() => _SearchTabState();
@@ -118,8 +127,18 @@ class _SearchTabState extends ConsumerState<_SearchTab>
   final _artwork = <String, Future<String?>>{};
   final _requests = <String, _RequestState>{};
 
+  /// Whether the initial query still has to be searched.
+  late bool _pendingInitialSearch =
+      widget.initialQuery?.trim().isNotEmpty ?? false;
+
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _query.text = widget.initialQuery?.trim() ?? '';
+  }
 
   @override
   void dispose() {
@@ -210,6 +229,12 @@ class _SearchTabState extends ConsumerState<_SearchTab>
   Widget _content(BuildContext context, LyraInfo info) {
     if (info.sources.isEmpty) {
       return const _Message('This Lyra offers no sources.');
+    }
+    if (_pendingInitialSearch) {
+      _pendingInitialSearch = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_search(info));
+      });
     }
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onPrimary.withValues(alpha: 0.7);

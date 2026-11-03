@@ -12,9 +12,23 @@ import 'package:jplayer/src/presentation/widgets/labeled_text_field.dart';
 import 'package:jplayer/src/providers/current_server_id_provider.dart';
 import 'package:mtls_proxy/mtls_proxy.dart';
 
-/// Opens the Lyra request page.
-void openLyra(BuildContext context) =>
-    unawaited(context.pushNamed(Routes.lyra.name));
+/// Opens the Lyra request page, searching for [query] when given. From
+/// Browse it stays in the Browse tab; from anywhere else it opens under
+/// Settings.
+void openLyra(BuildContext context, {String? query}) {
+  final router = GoRouter.of(context);
+  final location = router.routerDelegate.currentConfiguration.uri.path;
+  final route = location.startsWith(Routes.browse.path)
+      ? Routes.browseLyra
+      : Routes.lyra;
+  final trimmed = query?.trim() ?? '';
+  unawaited(
+    router.pushNamed(
+      route.name,
+      queryParameters: {if (trimmed.isNotEmpty) 'q': trimmed},
+    ),
+  );
+}
 
 class LyraSettings extends ConsumerStatefulWidget {
   const LyraSettings({super.key});

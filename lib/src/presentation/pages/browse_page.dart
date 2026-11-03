@@ -10,6 +10,7 @@ import 'package:jplayer/src/core/enums/enums.dart';
 import 'package:jplayer/src/data/providers/providers.dart';
 import 'package:jplayer/src/domain/models/models.dart';
 import 'package:jplayer/src/domain/providers/providers.dart';
+import 'package:jplayer/src/orpheus/lyra/lyra_entry.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
 import 'package:jplayer/src/presentation/widgets/widgets.dart';
 import 'package:jplayer/src/providers/color_scheme_provider.dart';
@@ -1032,17 +1033,24 @@ class _BrowsePageState extends ConsumerState<BrowsePage>
         borderRadius: BorderRadius.circular(40),
       ),
       prefixIcon: const Icon(JPlayer.search),
-      suffixIcon: IconButton(
-        onPressed: () {
-          if (_searchController.text.isEmpty) {
-            _closeSearch();
-          } else {
-            _searchController.clear();
-            _onSearchChanged('');
-          }
-        },
-        padding: EdgeInsets.zero,
-        icon: const Icon(JPlayer.close),
+      suffixIcon: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ORPHEUS: search Lyra for what is typed here.
+          LyraSearchButton(query: () => _searchController.text),
+          IconButton(
+            onPressed: () {
+              if (_searchController.text.isEmpty) {
+                _closeSearch();
+              } else {
+                _searchController.clear();
+                _onSearchChanged('');
+              }
+            },
+            padding: EdgeInsets.zero,
+            icon: const Icon(JPlayer.close),
+          ),
+        ],
       ),
       hintText: 'Search',
     ),

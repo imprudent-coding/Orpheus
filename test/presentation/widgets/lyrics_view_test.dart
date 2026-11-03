@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jplayer/src/core/enums/enums.dart';
 import 'package:jplayer/src/data/backend/mappers/lyrics_dto_mapper.dart';
 import 'package:jplayer/src/data/dto/dto.dart';
 import 'package:jplayer/src/domain/models/models.dart';
@@ -62,6 +63,7 @@ void main() {
     WidgetTester tester, {
     required PlaybackState state,
     Lyrics? lyrics,
+    void Function(AppSettingsNotifier settings)? configure,
   }) async {
     playback = FakePlaybackNotifier(state);
     final container = createProviderContainer(
@@ -70,6 +72,7 @@ void main() {
         lyricsProvider(_songId).overrideWith((_) async => lyrics),
       ],
     );
+    configure?.call(container.read(appSettingsProvider.notifier));
     await tester.pumpWidget(
       createTestApp(
         providerContainer: container,
@@ -183,6 +186,63 @@ void main() {
       );
 
       expect(find.text('No lyrics for this track'), findsOneWidget);
+    });
+
+    // ORPHEUS: lyrics blur and size settings.
+    testWidgets('- blurs lines around the current one by default', (
+      tester,
+    ) async {
+      await pumpLyricsView(
+        tester,
+        state: _stateAt(const Duration(seconds: 12)),
+        lyrics: _synced,
+      );
+
+      expect(
+        find.ancestor(
+          of: find.text('third line'),
+          matching: find.byType(ImageFiltered),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('- shows every line sharp with the blur turned off', (
+      tester,
+    ) async {
+      await pumpLyricsView(
+        tester,
+        state: _stateAt(const Duration(seconds: 12)),
+        lyrics: _synced,
+        configure: (settings) =>
+            settings.setEnabled(AppSetting.lyricsBlur, value: false),
+      );
+
+      expect(find.byType(ImageFiltered), findsNothing);
+    });
+
+    testWidgets('- scales the text with the lyrics size', (tester) async {
+      await pumpLyricsView(
+        tester,
+        state: _stateAt(Duration.zero),
+        lyrics: _unsynced,
+      );
+      final normal = styleOf(tester, 'plain one').fontSize!;
+
+      await pumpLyricsView(
+        tester,
+        state: _stateAt(Duration.zero),
+        lyrics: _unsynced,
+        configure: (settings) => settings.setValue(
+          AppSetting.lyricsSize,
+          LyricsSize.extraLarge.name,
+        ),
+      );
+
+      expect(
+        styleOf(tester, 'plain one').fontSize,
+        closeTo(normal * LyricsSize.extraLarge.scale, 0.001),
+      );
     });
   });
 }

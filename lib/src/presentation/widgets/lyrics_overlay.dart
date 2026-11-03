@@ -265,6 +265,11 @@ class _LyricsBodyState extends ConsumerState<_LyricsBody>
     );
   }
 
+  // ORPHEUS: lyrics blur and size settings.
+  bool get _blur => ref.watch(settingProvider(AppSetting.lyricsBlur));
+
+  double get _scale => ref.watch(lyricsSizeProvider).scale;
+
   TextAlign get _textAlign => switch (ref.watch(lyricsAlignmentProvider)) {
     LyricsAlignment.left => TextAlign.left,
     LyricsAlignment.center => TextAlign.center,
@@ -345,7 +350,8 @@ class _LyricsBodyState extends ConsumerState<_LyricsBody>
     final distance = (isSynced && _activeLine >= 0 && !isActive)
         ? (index - _activeLine).abs()
         : 0;
-    final blurSigma = distance == 0
+    // ORPHEUS: the blur around the current line can be turned off.
+    final blurSigma = distance == 0 || !_blur
         ? 0.0
         : (0.3 + 0.7 * distance).clamp(0.0, 4.0);
     final fade = distance == 0
@@ -378,7 +384,8 @@ class _LyricsBodyState extends ConsumerState<_LyricsBody>
               color: (!isSynced || isActive)
                   ? Colors.white
                   : Colors.white.withOpacity(fade),
-              fontSize: widget.device.isMobile ? 19 : 24,
+              // ORPHEUS: scaled by the lyrics size setting.
+              fontSize: (widget.device.isMobile ? 19 : 24) * _scale,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
               height: 1.4,
             ),
