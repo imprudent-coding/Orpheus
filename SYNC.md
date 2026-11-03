@@ -182,3 +182,10 @@ no secrets at all. Configure these for proper releases:
 | vars `APP_IDENTIFIER` (`com.github.imprudentcoding.orpheus`), `APPLE_ID`, `TEAM_ID`, `ITC_TEAM_ID` | fastlane / App Store Connect. Also set `DEVELOPMENT_TEAM` in the Xcode projects to your team (upstream's `RVM9F3VSHV` is still there). |
 
 `GITHUB_TOKEN` is provided automatically.
+
+### Commit 4: `packages/mtls_proxy`
+
+Only new files under `packages/mtls_proxy/` (see its README), plus a
+`tests.yaml` step that analyzes and tests the package. No upstream code is
+touched. Regenerate the test certificates with
+`packages/mtls_proxy/test/fixtures/generate.sh`.

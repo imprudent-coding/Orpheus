@@ -41,3 +41,6 @@ Summary of changes in this fork
   changelog is replaced by the release notes of those GitHub releases.
 - Release workflows build without upstream's signing/store secrets: store
   uploads and notarization are skipped when their secrets are missing.
+- Added packages/mtls_proxy: client-certificate (mTLS) support with
+  per-connection PKCS#12 storage in secure storage and a token-protected
+  loopback reverse proxy for native players and downloaders.

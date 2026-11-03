@@ -1,0 +1,22 @@
+name: mtls_proxy
+description: >
+  ORPHEUS: client-certificate (mTLS) support for Orpheus. Stores PKCS#12
+  client certificates per server connection, presents them only to that
+  connection's hosts, and runs a token-protected loopback reverse proxy for
+  native consumers (players, downloaders) that cannot present them.
+version: 0.1.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^10.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.2.0
