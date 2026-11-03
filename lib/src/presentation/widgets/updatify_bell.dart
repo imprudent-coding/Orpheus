@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jplayer/src/config/constants.dart';
-import 'package:jplayer/src/presentation/themes/themes.dart';
+import 'package:jplayer/src/domain/providers/update_banner_provider.dart';
+import 'package:jplayer/src/presentation/widgets/changelog_dialog.dart';
 import 'package:jplayer/src/presentation/widgets/hover_zoom.dart';
 import 'package:jplayer/src/providers/color_scheme_provider.dart';
-import 'package:updatify_flutter/updatify_flutter.dart';
 
+// ORPHEUS: opens the GitHub release notes instead of updatify.io; the dot
+// marks an available update. The class keeps its upstream name so its call
+// sites are unchanged.
 class UpdatifyBell extends ConsumerWidget {
   const UpdatifyBell({
     required this.isDesktop,
@@ -21,6 +23,7 @@ class UpdatifyBell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accent = ref.watch(accentColorProvider);
+    final hasNewUpdates = ref.watch(visibleUpdateProvider) != null;
     return HoverZoom(
       builder: (context, hovered) => IconTheme.merge(
         data: IconThemeData(size: iconSize),
@@ -34,32 +37,22 @@ class UpdatifyBell extends ConsumerWidget {
               overlayColor: Colors.transparent,
             ),
           ),
-          child: UpdatifyTrigger(
-            projectId: updatifyProjectId,
-            popupType: isDesktop
-                ? UpdatifyPopupType.modal
-                : UpdatifyPopupType.bottomSheet,
-            backgroundColor: Themes.changelogSurface,
-            title: changelogTitle,
-            borderRadius: BorderRadius.circular(8),
-            width: isDesktop
-                ? MediaQuery.sizeOf(context).width / 2
-                : double.infinity,
-            builder: (context, hasNewUpdates, openUpdates) => IconButton(
-              onPressed: openUpdates,
+          child: Builder(
+            builder: (context) => IconButton(
+              onPressed: () => showChangelog(context),
               icon: Stack(
                 clipBehavior: Clip.none,
                 children: [
                   const Icon(Icons.notifications_outlined),
                   if (hasNewUpdates)
-                    const Positioned(
+                    Positioned(
                       top: -1,
                       right: -1,
                       child: SizedBox.square(
                         dimension: 8,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: PingColor.red,
+                            color: Colors.redAccent.shade200,
                             shape: BoxShape.circle,
                           ),
                         ),

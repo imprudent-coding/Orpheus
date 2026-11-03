@@ -78,8 +78,39 @@ jobs:
           bundler-cache: true
           working-directory: macos
 
+      # ORPHEUS: Developer ID signing and notarization need a match repository
+      # and an App Store Connect API key. Without them the DMG is ad-hoc signed
+      # and not notarized (users must right-click > Open, or run
+      # `xattr -dr com.apple.quarantine /Applications/Orpheus.app`).
+      - name: Check signing secrets
+        working-directory: .
+        run: |
+          if [ -n "$MATCH_PASSWORD" ] && [ -n "$GIT_AUTHORIZATION" ] \
+             && [ -n "$APPSTORE_KEY_ID" ] && [ -n "$APPSTORE_P8_KEY_CONTENT" ]; then
+            echo "DEVELOPER_ID=true" >> "$GITHUB_ENV"
+            echo "SIGN_IDENTITY=Developer ID Application" >> "$GITHUB_ENV"
+          else
+            echo "DEVELOPER_ID=false" >> "$GITHUB_ENV"
+            echo "SIGN_IDENTITY=-" >> "$GITHUB_ENV"
+            echo "::warning::Signing secrets are not configured: the DMG is ad-hoc signed and not notarized."
+          fi
+
       - name: Install Developer ID certificate (fastlane match)
+        if: ${{ env.DEVELOPER_ID == 'true' }}
         run: bundle exec fastlane mac certificates
+
+      # ORPHEUS: without signing secrets the Xcode build must not ask for a
+      # development certificate or the upstream team. Only the CI checkout is
+      # changed; the final signature is applied by the signing step below.
+      - name: Use ad-hoc signing for the Xcode build
+        if: ${{ env.DEVELOPER_ID != 'true' }}
+        working-directory: .
+        run: |
+          sed -i '' \
+            -e 's/CODE_SIGN_IDENTITY = "Apple Development";/CODE_SIGN_IDENTITY = "-";/g' \
+            -e 's/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g' \
+            -e 's/DEVELOPMENT_TEAM = [A-Z0-9]*;/DEVELOPMENT_TEAM = "";/g' \
+            macos/Runner.xcodeproj/project.pbxproj
 
       - name: Build macOS app
         run: |
@@ -90,13 +121,15 @@ jobs:
             --build-name=${{ steps.version.outputs.version }} \
             --build-number=${{ steps.version.outputs.build_number }}
 
-      - name: Sign app with Developer ID + hardened runtime
+      - name: Sign app (Developer ID when configured, ad-hoc otherwise) + hardened runtime
         working-directory: .
         run: |
           set -euo pipefail
           APP="$(ls -d build/macos/Build/Products/Release/*.app | head -1)"
           echo "Signing $APP"
-          IDENTITY="Developer ID Application"
+          IDENTITY="$SIGN_IDENTITY"
+          # An ad-hoc signature cannot carry a secure timestamp.
+          if [ "$IDENTITY" = "-" ]; then TIMESTAMP="--timestamp=none"; else TIMESTAMP="--timestamp"; fi
 
           # Diagnostic: show what signing identities the runner actually has.
           # If no "Developer ID Application" identity appears here, match did not
@@ -124,11 +157,11 @@ jobs:
 
           # Sign inside-out: loose dylibs, then frameworks, then the app itself.
           find "$APP/Contents/Frameworks" -type f -name "*.dylib" \
-            -exec codesign --force --timestamp --options runtime -s "$IDENTITY" {} +
+            -exec codesign --force "$TIMESTAMP" --options runtime -s "$IDENTITY" {} +
           find "$APP/Contents/Frameworks" -type d -name "*.framework" \
-            -exec codesign --force --timestamp --options runtime -s "$IDENTITY" {} +
+            -exec codesign --force "$TIMESTAMP" --options runtime -s "$IDENTITY" {} +
 
-          codesign --force --timestamp --options runtime \
+          codesign --force "$TIMESTAMP" --options runtime \
             --entitlements "$ENTITLEMENTS" -s "$IDENTITY" "$APP"
 
           codesign --verify --deep --strict --verbose=2 "$APP"
@@ -172,11 +205,14 @@ jobs:
           test -f "$DMG"
 
           # Sign the DMG itself (recommended for Developer ID distribution).
-          codesign --force --timestamp --options runtime \
-            -s "Developer ID Application" "$DMG"
+          if [ "$DEVELOPER_ID" = "true" ]; then
+            codesign --force --timestamp --options runtime \
+              -s "Developer ID Application" "$DMG"
+          fi
           echo "DMG=$DMG" >> "$GITHUB_ENV"
 
       - name: Notarize DMG
+        if: ${{ env.DEVELOPER_ID == 'true' }}
         working-directory: .
         run: |
           set -euo pipefail
