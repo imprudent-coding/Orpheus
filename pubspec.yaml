@@ -75,6 +75,11 @@ dependencies:
   logging: ^1.3.0
   optional_features:
     path: ./packages/optional_features
+  # ORPHEUS: client-certificate (mTLS) support, see packages/mtls_proxy.
+  mtls_proxy:
+    path: ./packages/mtls_proxy
+  # ORPHEUS: picking .p12/.pfx client certificates and CA files.
+  file_picker: ^13.1.0
   connectivity_plus: ^7.3.1
   xml: ^6.6.1
   smtc_windows: ^1.1.0

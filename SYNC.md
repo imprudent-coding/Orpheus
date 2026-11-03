@@ -189,3 +189,110 @@ Only new files under `packages/mtls_proxy/` (see its README), plus a
 `tests.yaml` step that analyzes and tests the package. No upstream code is
 touched. Regenerate the test certificates with
 `packages/mtls_proxy/test/fixtures/generate.sh`.
+
+### Commit 5: mTLS hook points and settings UI
+
+New app files (fork-owned, safe on rebase): `lib/src/orpheus/mtls_integration.dart`
+(all glue), `lib/src/orpheus/client_certificate_ui.dart` (import dialog,
+settings section, login section), `test/orpheus/mtls_integration_test.dart`,
+`android/app/src/main/res/xml/network_security_config.xml`,
+`docs/orpheus-testing.md`.
+
+| Upstream file | Hook |
+|---|---|
+| `pubspec.yaml`, `pubspec.lock`, generated plugin registrants | `mtls_proxy` (path) and `file_picker`. |
+| `lib/main.dart` | `initOrpheusMtls(container)` right after the provider container exists, before anything makes a request. Loads certificates, starts the proxy, keeps certificates in step with saved accounts. |
+| `lib/src/core/network/certificate_trust.dart` | `TrustedCertificateHttpOverrides.connectionFactory` uses `MtlsProxy.instance.contextFor(host, port)`: every Dart-side request (Dio, `package:http`, artwork cache, probes) presents the client certificate to that connection's hosts and to nobody else. |
+| `lib/src/domain/providers/playback_provider.dart` | Playback precedence (below) and a guard in `switchTarget` that refuses Cast/DLNA targets for certificate servers. |
+| `lib/src/data/services/download_service.dart`, `lib/src/core/downloads/cache_downloader.dart` | Proxy URL resolved at the moment a download starts (never stored); foreground download on iOS. |
+| `lib/src/presentation/widgets/playback_target_picker.dart` | Cast and DLNA rows disabled with an explanation for certificate servers. |
+| `lib/src/presentation/pages/settings_page.dart` | "Client certificate (mTLS)" section under Connection. |
+| `lib/src/presentation/pages/login_page.dart` | Certificate import while adding a server; sign-in errors explain a missing client certificate. |
+| `android/app/src/main/AndroidManifest.xml` | `networkSecurityConfig` (cleartext to 127.0.0.1; upstream's cleartext behaviour kept, see the file). |
+| `macos/Runner/{Debug,Release}.entitlements` | `files.user-selected.read-only` for the file picker in the sandboxed build (`network.server` was already there). |
+| `ios/Runner/Info.plist`, `macos/Runner/Info.plist` | Comment only: why `NSAllowsLocalNetworking` must not be added. |
+
+## How mTLS is wired
+
+- **Storage.** The real server URLs stay in every store, exactly as upstream
+  keeps them. Certificates live in secure storage under the account's server
+  ID (`orpheus_mtls_*` keys), together with the account's home and remote
+  URLs. Proxy URLs exist only in memory, resolved at the moment of use.
+- **Dart-side requests** get the certificate in the TLS handshake through the
+  app's `HttpOverrides` (no URL rewriting): Dio/Retrofit API calls, login
+  probes, connectivity probes, artwork (`flutter_cache_manager`), Android
+  Auto and CarPlay artwork (both go through the Dart artwork cache), the
+  home-screen widget.
+- **Native consumers** get a loopback proxy URL from `MtlsProxy.resolve()`:
+  just_audio (ExoPlayer, AVPlayer), just_audio_media_kit (libmpv on
+  Windows/Linux), background_downloader, and the OS media shells that load
+  artwork by URL (SMTC, MPRIS).
+- **Cast and DLNA** devices fetch streams themselves and can neither present
+  the certificate nor reach the phone's loopback, so they are disabled for
+  certificate servers.
+
+### Playback precedence
+
+At the playback hook (`PlaybackNotifier`, where the stream URL for the local
+player is built):
+
+1. If the stream's server has a client certificate, the **mTLS proxy** serves
+   it. The mTLS proxy honours `CertificateTrust` (user-trusted self-signed
+   certificates and pinned fingerprints), so a server using both works.
+2. Otherwise upstream's **StreamProxyServer** serves it exactly as before.
+
+The two are never chained. One consequence: StreamProxyServer's mid-stream
+fallback between home and remote address (its "location" mode) is not used
+for certificate servers; each track is resolved against the address the
+connectivity check currently prefers.
+
+## Known limitations
+
+- **iOS downloads** from certificate servers run in the foreground (in the
+  app) instead of through background_downloader: iOS suspends the app, and
+  with it the loopback proxy, while a background download continues in a
+  system daemon. Such downloads pause when the app is suspended and need to
+  be restarted (the download sync picks them up again). Pause/resume is not
+  available for them.
+- **Background playback on iOS** keeps working because the audio background
+  mode keeps the app (and the proxy) running while audio plays. After a long
+  pause the app may be suspended; the proxy is restarted on resume (on the
+  same port when possible) and before each track is resolved.
+- **Android** downloads go through the proxy, which lives in the app process:
+  they stop if Android kills the app.
+- **Cast and DLNA** are unavailable for certificate servers. AirPlay video
+  hand-off of a URL would hit the same wall; AirPlay audio streams from the
+  phone and works.
+- **Token exposure:** the proxy URL (with its per-launch token) is visible to
+  other processes of the same user where the OS publishes now-playing
+  artwork by URL (MPRIS on Linux, SMTC on Windows). The token only unlocks
+  the configured servers, only on 127.0.0.1, and only until the app quits.
+- **Cooldown:** another app spamming the proxy with wrong tokens can trigger
+  the cooldown (30 bad requests in 10 s close the listener for 10 s), which
+  interrupts playback for that time.
+- **Web:** the import UI is hidden and the proxy never starts; the browser
+  handles client certificates. Upstream's web target does not run in any
+  case (`main()` uses `dart:io` `Platform` unconditionally).
+- **Certificate replacement** takes effect for new connections at once;
+  pooled keep-alive connections of the API client are reused until they idle
+  out (about 15 s).
+- A certificate is presented on TLS 1.3 only when the server asks for one,
+  and only to the exact host:port of the connection's home and remote
+  address. A server reached through a different name or port (for example a
+  redirect to another host) does not get it.
+
+## Icons to replace
+
+Icon files were left as they are. Replace these to rebrand the artwork:
+
+- Android: `android/app/src/main/res/mipmap-*/ic_launcher.png` (launcher)
+  and `android/app/src/main/res/drawable-*/ic_stat_music.png` (notification)
+- iOS: `ios/Runner/Assets.xcassets/AppIcon.appiconset/*`
+- macOS: `macos/Runner/Assets.xcassets/AppIcon.appiconset/*`,
+  `macos/Runner/Assets.xcassets/appstore.png`
+- Windows: `windows/runner/resources/app_icon.ico`
+- Linux: `linux/packaging/jellybox.png` (installed as `orpheus.png` /
+  `com.github.imprudentcoding.orpheus.png` by the packaging scripts)
+- Web: `web/favicon.png`, `web/icons/*`
+- In-app login logo: `assets/images/jellybox_logo.svg`
+- README artwork: `docs/logo.png`, `docs/screenshots/*`

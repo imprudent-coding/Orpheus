@@ -19,6 +19,7 @@ import 'package:jplayer/src/domain/providers/cast_devices_provider.dart';
 import 'package:jplayer/src/domain/providers/cloud_provider.dart';
 import 'package:jplayer/src/domain/providers/output_route_provider.dart';
 import 'package:jplayer/src/domain/providers/upnp_renderers_provider.dart';
+import 'package:jplayer/src/orpheus/mtls_integration.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
 import 'package:jplayer/src/presentation/widgets/anchored_dropdown.dart';
 import 'package:jplayer/src/presentation/widgets/form_modal.dart';
@@ -396,6 +397,7 @@ class _PlaybackTargetMenuState extends ConsumerState<PlaybackTargetMenu> {
     final cast = ref.watch(castDevicesProvider);
     final conductor = ref.watch(cloudProvider);
     final host = ref.watch(controlPointHostProvider);
+    final remoteBlocked = ref.watch(remotePlaybackBlockedProvider); // ORPHEUS
     final scanning = discovery.scanning || cast.scanning;
     final renderers = visibleRenderers(
       discovery.renderers,
@@ -466,11 +468,12 @@ class _PlaybackTargetMenuState extends ConsumerState<PlaybackTargetMenu> {
               icon: castDeviceIcon(device),
               badge: _castBadge,
               title: device.friendlyName,
-              subtitle: device.modelName,
+              // ORPHEUS: Cast cannot play from a client-certificate server.
+              subtitle: remoteBlocked ?? device.modelName,
               selected:
                   elsewhere == null && active.id == 'cast:${device.deviceID}',
               busy: _connecting == 'cast:${device.deviceID}',
-              onTap: _connecting != null
+              onTap: _connecting != null || remoteBlocked != null
                   ? null
                   : () => _selectCastDevice(device),
             ),
@@ -578,10 +581,9 @@ class _PlaybackTargetMenuState extends ConsumerState<PlaybackTargetMenu> {
     required bool selected,
     required ControlPointHost host,
   }) {
-    final blocked = castingBlockedReason(
-      deviceHoldsQueue: renderer.holdsQueue,
-      host: host,
-    );
+    final blocked =
+        ref.watch(remotePlaybackBlockedProvider) ?? // ORPHEUS: mTLS server
+        castingBlockedReason(deviceHoldsQueue: renderer.holdsQueue, host: host);
 
     return _TargetTile(
       icon: rendererIcon(renderer),

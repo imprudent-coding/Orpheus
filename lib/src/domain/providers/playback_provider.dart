@@ -25,6 +25,7 @@ import 'package:jplayer/src/domain/playback/playback_target_provider.dart';
 import 'package:jplayer/src/domain/providers/pending_media_play_provider.dart';
 import 'package:jplayer/src/domain/providers/stream_preference_provider.dart';
 import 'package:jplayer/src/domain/providers/volume_provider.dart';
+import 'package:jplayer/src/orpheus/mtls_integration.dart';
 import 'package:jplayer/src/providers/base_url_provider.dart';
 import 'package:jplayer/src/providers/connectivity_provider.dart';
 import 'package:jplayer/src/providers/current_server_id_provider.dart';
@@ -419,6 +420,8 @@ class PlaybackNotifier extends StateNotifier<PlaybackState> {
   }
 
   Future<void> switchTarget(PlaybackTarget to, {bool carryQueue = true}) {
+    // ORPHEUS: Cast/DLNA devices cannot play from a client-certificate server.
+    if (blocksRemoteTarget(_ref, to)) return _switching;
     if (to.id != _destination.id) {
       _queueSwitch(to, carryQueue: carryQueue);
       _ref.read(playbackTargetProvider.notifier).select(to);
@@ -985,7 +988,12 @@ class PlaybackNotifier extends StateNotifier<PlaybackState> {
     }
 
     var artUri = _artUri(song, album);
-    if (target.kind == PlaybackTargetKind.local) {
+    // ORPHEUS: precedence at this hook. A server with a client certificate is
+    // played through the mTLS proxy (which also honours CertificateTrust);
+    // StreamProxyServer keeps serving every other server. Never both.
+    if (target.kind == PlaybackTargetKind.local && needsMtlsProxy(uri)) {
+      (uri, artUri) = await resolveForMtlsPlayback(uri, artUri);
+    } else if (target.kind == PlaybackTargetKind.local) {
       final proxy = _ref.read(streamProxyProvider);
       uri = location == null
           ? await proxy.resolve(uri)

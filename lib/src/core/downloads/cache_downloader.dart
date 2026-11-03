@@ -1,5 +1,6 @@
 import 'package:background_downloader/background_downloader.dart' as bd;
 import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:jplayer/src/orpheus/mtls_integration.dart';
 import 'package:path/path.dart' as p;
 
 abstract class CacheDownloader {
@@ -38,9 +39,14 @@ class BackgroundCacheDownloader implements CacheDownloader {
     if (fileName.isEmpty || p.basename(fileName) != fileName) {
       throw ArgumentError.value(fileName, 'fileName', 'must be a bare name');
     }
+    // ORPHEUS: client-certificate servers go through the mTLS proxy (URL
+    // resolved now, never stored), or are fetched in the foreground on iOS.
+    if (downloadsInForeground(url)) {
+      return fetchInForeground(url, p.join(await directoryPath(), fileName));
+    }
     final task = bd.DownloadTask(
       taskId: taskIdFor(id),
-      url: url,
+      url: await downloadUrlFor(url),
       filename: fileName,
       directory: _directory,
       baseDirectory: _baseDirectory,

@@ -12,6 +12,7 @@ import 'package:jplayer/src/core/discord/discord_presence_handler.dart';
 import 'package:jplayer/src/core/enums/enums.dart';
 import 'package:jplayer/src/data/services/artwork_cache.dart';
 import 'package:jplayer/src/domain/providers/providers.dart';
+import 'package:jplayer/src/orpheus/client_certificate_ui.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
 import 'package:jplayer/src/presentation/widgets/changelog_dialog.dart';
 import 'package:jplayer/src/presentation/widgets/widgets.dart';
@@ -167,6 +168,11 @@ class SettingsPage extends ConsumerWidget {
                     const ServerAccountList(),
                     _sectionHeader('Connection'),
                     const ServerAddressSettings(),
+                    // ORPHEUS: client certificate (mTLS) of this server.
+                    if (clientCertificatesSupported) ...[
+                      _sectionHeader('Client certificate (mTLS)'),
+                      const ClientCertificateSettings(),
+                    ],
                     _sectionHeader('General'),
                     if (kDebugMode) _settingsButton(context),
                     if (kDebugMode) _queueCacheButton(context),

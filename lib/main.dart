@@ -30,6 +30,7 @@ import 'package:jplayer/src/data/storages/window_placement_storage.dart';
 import 'package:jplayer/src/domain/providers/pending_media_play_provider.dart';
 import 'package:jplayer/src/domain/providers/studio_mode_provider.dart';
 import 'package:screen_retriever/screen_retriever.dart';
+import 'package:jplayer/src/orpheus/mtls_integration.dart';
 import 'package:jplayer/src/presentation/widgets/landscape_player.dart';
 import 'package:jplayer/src/screen_factory.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -130,6 +131,9 @@ Future<void> main() async {
         ),
     ],
   );
+  // ORPHEUS: load client certificates (mTLS) and start the loopback proxy
+  // before anything makes a network request.
+  await initOrpheusMtls(container);
   final carContent = CarContent(container);
   if (Platform.isIOS) CarPlayHandler.initialize(container, carContent);
   if (Platform.isAndroid) AndroidAutoHandler.initialize(container, carContent);

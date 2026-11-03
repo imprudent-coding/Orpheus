@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ORPHEUS: the mTLS loopback proxy serves plain HTTP on 127.0.0.1 only. -->
+<network-security-config>
+    <!--
+      Upstream allows cleartext HTTP everywhere (android:usesCleartextTraffic)
+      because many servers run plain HTTP on the LAN. This file keeps that
+      behaviour; with this file present Android reads the base-config below
+      instead of the manifest attribute. To permit cleartext ONLY to the
+      loopback proxy, set cleartextTrafficPermitted="false" here: plain-HTTP
+      servers will then stop working in the native player and downloader.
+    -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>
