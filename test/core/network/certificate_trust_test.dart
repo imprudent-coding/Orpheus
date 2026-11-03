@@ -91,31 +91,31 @@ void main() {
 
   group('pins', () {
     test('- a pinned host must present exactly its certificate', () async {
-      await trust.pin('abc.tunnel.jellybox.app', 443, 'AA11');
+      await trust.pin('pinned.example.net', 443, 'AA11');
 
-      final pinned = certificate(host: 'abc.tunnel.jellybox.app', port: 443);
+      final pinned = certificate(host: 'pinned.example.net', port: 443);
       expect(trust.allowsCertificate(pinned), isTrue);
       expect(
         trust.allowsCertificate(
           certificate(
-            host: 'abc.tunnel.jellybox.app',
+            host: 'pinned.example.net',
             port: 443,
             fingerprint: 'bb22',
           ),
         ),
         isFalse,
       );
-      expect(trust.isTrusted('abc.tunnel.jellybox.app', 443), isTrue);
+      expect(trust.isTrusted('pinned.example.net', 443), isTrue);
     });
 
     test('- survive a restart and go away when unpinned', () async {
-      await trust.pin('abc.tunnel.jellybox.app', 443, 'aa11');
+      await trust.pin('pinned.example.net', 443, 'aa11');
       final restarted = CertificateTrust();
       await restarted.load(prefs);
-      expect(restarted.isTrusted('abc.tunnel.jellybox.app', 443), isTrue);
+      expect(restarted.isTrusted('pinned.example.net', 443), isTrue);
 
-      await restarted.unpin('abc.tunnel.jellybox.app', 443);
-      expect(restarted.isTrusted('abc.tunnel.jellybox.app', 443), isFalse);
+      await restarted.unpin('pinned.example.net', 443);
+      expect(restarted.isTrusted('pinned.example.net', 443), isFalse);
     });
   });
 }

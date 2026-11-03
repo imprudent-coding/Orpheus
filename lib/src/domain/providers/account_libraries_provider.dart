@@ -26,7 +26,6 @@ accountLibrariesProvider = FutureProvider.autoDispose
           return (
             account?.url,
             account?.remoteUrl,
-            account?.relayUrl,
             account?.token,
             account?.needsReauth,
           );
@@ -49,7 +48,7 @@ accountLibrariesProvider = FutureProvider.autoDispose
         ),
       )..httpClientAdapter = shared.httpClientAdapter;
 
-      final addresses = [account.url, ?account.remoteUrl, ?account.relayUrl];
+      final addresses = [account.url, ?account.remoteUrl];
       for (final url in addresses) {
         try {
           final client = clientFor(

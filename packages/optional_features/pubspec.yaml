@@ -5,7 +5,7 @@ description: >
   working implementation is a private package swapped in through
   pubspec_overrides.yaml.
 version: 0.1.0
-homepage: https://jellybox.app
+homepage: https://github.com/imprudent-coding/Orpheus
 publish_to: "none"
 
 environment:

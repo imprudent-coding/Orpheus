@@ -12,7 +12,6 @@ import 'package:jplayer/src/config/routes.dart';
 import 'package:jplayer/src/core/discord/discord_presence_handler.dart';
 import 'package:jplayer/src/core/enums/enums.dart';
 import 'package:jplayer/src/data/services/artwork_cache.dart';
-import 'package:jplayer/src/domain/providers/cloud_provider.dart';
 import 'package:jplayer/src/domain/providers/providers.dart';
 import 'package:jplayer/src/presentation/themes/themes.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
@@ -191,10 +190,6 @@ class SettingsPage extends ConsumerWidget {
                     const ServerAccountList(),
                     _sectionHeader('Connection'),
                     const ServerAddressSettings(),
-                    if (ref.watch(cloudAvailableProvider)) ...[
-                      _sectionHeader('Jellybox Cloud'),
-                      const JellyboxCloudSettings(),
-                    ],
                     _sectionHeader('General'),
                     if (kDebugMode) _settingsButton(context),
                     if (kDebugMode) _queueCacheButton(context),
@@ -468,18 +463,6 @@ class SettingsPage extends ConsumerWidget {
                       context,
                       'When your server has no lyrics for a song, looks '
                       'them up on lrclib.net, a free public lyrics library.',
-                    ),
-                    _sectionHeader('Privacy'),
-                    _settingCheckbox(
-                      ref: ref,
-                      setting: AppSetting.telemetryOptOut,
-                      label: 'Opt out of analytics and crash reports',
-                    ),
-                    _settingNote(
-                      context,
-                      'Jellybox counts app launches and sends crash reports to '
-                      'help fix bugs. Nothing about your library or listening '
-                      'is collected.',
                     ),
                     if (!device.isDesktop) _logOutButton(ref),
                     _versionLabel(context),

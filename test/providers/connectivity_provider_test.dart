@@ -7,7 +7,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jplayer/src/core/network/certificate_trust.dart';
 import 'package:jplayer/src/data/backend/media_server_client.dart';
-import 'package:jplayer/src/data/backend/remote_access.dart';
 import 'package:jplayer/src/data/providers/providers.dart';
 import 'package:jplayer/src/domain/providers/current_user_provider.dart';
 import 'package:jplayer/src/providers/base_url_provider.dart';
@@ -51,10 +50,6 @@ void main() {
 
   const home = 'http://192.168.1.10:8096';
   const remote = 'http://100.64.0.5:8096';
-  const relay = 'https://abc.tunnel.jellybox.app';
-  const access = RemoteAccessResult(
-    access: RemoteAccess(url: relay, fingerprint: 'ab12'),
-  );
 
   late _Hosts hosts;
   late _MockMediaServerClient client;
@@ -68,7 +63,6 @@ void main() {
     client = _MockMediaServerClient();
     storage = _MockSecureStorage();
     trust = CertificateTrust();
-    when(() => client.remoteAccess()).thenAnswer((_) async => access);
     when(
       () => storage.write(
         key: any(named: 'key'),
@@ -81,7 +75,6 @@ void main() {
   });
 
   ProviderContainer start({
-    String? knownRelay,
     String? knownRemote,
     bool signedIn = true,
     Duration heartbeat = const Duration(hours: 1),
@@ -115,7 +108,6 @@ void main() {
     container.read(serverAddressesProvider.notifier).state = ServerAddresses(
       home: home,
       remote: knownRemote,
-      relay: knownRelay,
     );
     container.read(dioProvider).httpClientAdapter = hosts;
     container.read(connectivityProvider);
@@ -125,36 +117,40 @@ void main() {
   Future<bool> probe(ProviderContainer container) =>
       container.read(connectivityProvider.notifier).refresh();
 
+  // ORPHEUS: these tests used to fail over to the JellyBox relay. The relay is
+  // removed, so failover is exercised with the manual remote address instead.
   test('- stays on the home address while it answers', () async {
     hosts.status['192.168.1.10'] = 200;
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRelay: relay);
+    hosts.status['100.64.0.5'] = 200;
+    final container = start(knownRemote: remote);
 
     expect(await probe(container), isTrue);
     expect(container.read(baseUrlProvider), home);
   });
 
-  test('- falls back to the relay when home does not answer', () async {
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRelay: relay);
+  test(
+    '- falls back to the remote address when home does not answer',
+    () async {
+      hosts.status['100.64.0.5'] = 200;
+      final container = start(knownRemote: remote);
 
-    expect(await probe(container), isTrue);
-    expect(container.read(baseUrlProvider), relay);
-  });
+      expect(await probe(container), isTrue);
+      expect(container.read(baseUrlProvider), remote);
+    },
+  );
 
-  test('- is offline when the relay cannot reach the server either', () async {
-    hosts.status['abc.tunnel.jellybox.app'] = 502;
-    final container = start(knownRelay: relay);
+  test('- is offline when no address answers', () async {
+    final container = start(knownRemote: remote);
 
     expect(await probe(container), isFalse);
     expect(container.read(baseUrlProvider), home);
   });
 
   test('- goes back home as soon as home answers again', () async {
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRelay: relay);
+    hosts.status['100.64.0.5'] = 200;
+    final container = start(knownRemote: remote);
     await probe(container);
-    expect(container.read(baseUrlProvider), relay);
+    expect(container.read(baseUrlProvider), remote);
 
     hosts.status['192.168.1.10'] = 200;
     await probe(container);
@@ -162,25 +158,9 @@ void main() {
     expect(container.read(baseUrlProvider), home);
   });
 
-  test('- learns the relay address once sign-in finishes', () async {
+  test('- tells direct, remote and offline apart', () async {
     hosts.status['192.168.1.10'] = 200;
-    when(() => client.remoteAccess()).thenAnswer((_) async => access);
-    final container = start(signedIn: false);
-    await probe(container);
-    expect(container.read(serverAddressesProvider)?.relay, isNull);
-
-    container.read(currentUserProvider.notifier).state = const User(
-      userId: 'u',
-      token: 't',
-    );
-    await pumpEventQueue();
-
-    expect(container.read(serverAddressesProvider)?.relay, relay);
-  });
-
-  test('- tells direct, tunnel and offline apart', () async {
-    hosts.status['192.168.1.10'] = 200;
-    final container = start(knownRelay: relay)
+    final container = start(knownRemote: remote)
       ..listen(serverConnectionProvider, (_, _) {});
 
     await probe(container);
@@ -188,11 +168,11 @@ void main() {
 
     hosts.status
       ..remove('192.168.1.10')
-      ..['abc.tunnel.jellybox.app'] = 200;
+      ..['100.64.0.5'] = 200;
     await probe(container);
-    expect(container.read(serverConnectionProvider), ServerConnection.tunnel);
+    expect(container.read(serverConnectionProvider), ServerConnection.remote);
 
-    hosts.status['abc.tunnel.jellybox.app'] = 502;
+    hosts.status.remove('100.64.0.5');
     await probe(container);
     expect(container.read(serverConnectionProvider), ServerConnection.offline);
   });
@@ -201,9 +181,9 @@ void main() {
     '- notices home going away on its own, without a network event',
     () async {
       hosts.status['192.168.1.10'] = 200;
-      hosts.status['abc.tunnel.jellybox.app'] = 200;
+      hosts.status['100.64.0.5'] = 200;
       final container = start(
-        knownRelay: relay,
+        knownRemote: remote,
         heartbeat: const Duration(milliseconds: 20),
       );
       await probe(container);
@@ -212,14 +192,14 @@ void main() {
       hosts.status.remove('192.168.1.10');
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
-      expect(container.read(baseUrlProvider), relay);
+      expect(container.read(baseUrlProvider), remote);
     },
   );
 
   test('- shrugs off a single failed round while it is online', () async {
     hosts.status['192.168.1.10'] = 200;
     final container = start(
-      knownRelay: relay,
+      knownRemote: remote,
       offlineGrace: const Duration(milliseconds: 300),
     );
     await probe(container);
@@ -229,17 +209,17 @@ void main() {
     expect(await probe(container), isTrue);
     expect(container.read(connectivityProvider), isTrue);
 
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
+    hosts.status['100.64.0.5'] = 200;
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
     expect(container.read(connectivityProvider), isTrue);
-    expect(container.read(baseUrlProvider), relay);
+    expect(container.read(baseUrlProvider), remote);
   });
 
   test('- goes offline once a second round confirms it', () async {
     hosts.status['192.168.1.10'] = 200;
     final container = start(
-      knownRelay: relay,
+      knownRemote: remote,
       offlineGrace: const Duration(milliseconds: 200),
     );
     await probe(container);
@@ -271,7 +251,7 @@ void main() {
 
   test('- keeps one probe client across rounds', () async {
     hosts.status['192.168.1.10'] = 200;
-    final container = start(knownRelay: relay);
+    final container = start(knownRemote: remote);
 
     await probe(container);
     await probe(container);
@@ -282,33 +262,33 @@ void main() {
 
   test('- treats a block page answering for home as down', () async {
     hosts.status['192.168.1.10'] = 403;
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRelay: relay);
+    hosts.status['100.64.0.5'] = 200;
+    final container = start(knownRemote: remote);
 
     expect(await probe(container), isTrue);
-    expect(container.read(baseUrlProvider), relay);
+    expect(container.read(baseUrlProvider), remote);
   });
 
   test(
-    '- walks a request the block page answered over to the tunnel',
+    '- walks a request the block page answered over to the remote address',
     () async {
       hosts.status['192.168.1.10'] = 403;
-      hosts.status['abc.tunnel.jellybox.app'] = 200;
-      final container = start(knownRelay: relay);
+      hosts.status['100.64.0.5'] = 200;
+      final container = start(knownRemote: remote);
 
       final response = await container
           .read(dioProvider)
           .getUri<void>(Uri.parse('$home/Items'));
 
-      expect(response.realUri.toString(), '$relay/Items');
-      expect(container.read(baseUrlProvider), relay);
+      expect(response.realUri.toString(), '$remote/Items');
+      expect(container.read(baseUrlProvider), remote);
     },
   );
 
-  test('- retries a request that cannot reach home on the tunnel', () async {
+  test('- retries a request that cannot reach home on the remote', () async {
     hosts.status['192.168.1.10'] = 200;
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRelay: relay);
+    hosts.status['100.64.0.5'] = 200;
+    final container = start(knownRemote: remote);
     await probe(container);
     hosts.status.remove('192.168.1.10');
 
@@ -316,18 +296,16 @@ void main() {
         .read(dioProvider)
         .getUri<void>(Uri.parse('$home/Items?limit=5'));
 
-    expect(response.realUri.toString(), '$relay/Items?limit=5');
-    expect(container.read(baseUrlProvider), relay);
+    expect(response.realUri.toString(), '$remote/Items?limit=5');
+    expect(container.read(baseUrlProvider), remote);
   });
 
   test(
-    '- leaves a failed request alone once the tunnel is known to be down',
+    '- leaves a failed request alone once the remote is known to be down',
     () async {
       hosts.status['192.168.1.10'] = 200;
-      hosts.status['abc.tunnel.jellybox.app'] = 502;
-      final container = start(knownRelay: relay);
+      final container = start(knownRemote: remote);
       await probe(container);
-      expect(container.read(relayReachableProvider), isFalse);
       hosts.status.remove('192.168.1.10');
 
       await expectLater(
@@ -338,124 +316,12 @@ void main() {
     },
   );
 
-  test('- counts a redirect from the tunnel as an answer', () async {
-    hosts.status['abc.tunnel.jellybox.app'] = 302;
-    final container = start(knownRelay: relay);
+  test('- counts a redirect as an answer', () async {
+    hosts.status['100.64.0.5'] = 302;
+    final container = start(knownRemote: remote);
 
     expect(await probe(container), isTrue);
-    expect(container.read(relayReachableProvider), isTrue);
-    expect(container.read(baseUrlProvider), relay);
-  });
-
-  test(
-    '- forgets the relay address once the server stops publishing one',
-    () async {
-      hosts.status['192.168.1.10'] = 200;
-      when(() => client.remoteAccess()).thenAnswer((_) async => null);
-      final container = start(knownRelay: relay);
-
-      await probe(container);
-      await pumpEventQueue();
-
-      expect(container.read(serverAddressesProvider)?.relay, isNull);
-      verify(() => storage.delete(key: relayUrlStorageKey)).called(1);
-    },
-  );
-
-  test('- keeps the relay address when the server cannot be asked', () async {
-    hosts.status['192.168.1.10'] = 200;
-    when(() => client.remoteAccess()).thenThrow(
-      DioException.connectionError(
-        requestOptions: RequestOptions(path: '/'),
-        reason: 'unreachable',
-      ),
-    );
-    final container = start(knownRelay: relay);
-
-    await probe(container);
-    await pumpEventQueue();
-
-    expect(container.read(serverAddressesProvider)?.relay, relay);
-  });
-
-  test('- rechecks at once when a request through the tunnel fails', () async {
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRelay: relay);
-    await probe(container);
-    expect(container.read(serverConnectionProvider), ServerConnection.tunnel);
-
-    hosts.status['abc.tunnel.jellybox.app'] = 502;
-    await expectLater(
-      container.read(dioProvider).getUri<void>(Uri.parse('$relay/Items')),
-      throwsA(isA<DioException>()),
-    );
-    await Future<void>.delayed(const Duration(milliseconds: 50));
-
-    expect(container.read(serverConnectionProvider), ServerConnection.offline);
-  });
-
-  test('- pins the server certificate it learns at home', () async {
-    hosts.status['192.168.1.10'] = 200;
-    final container = start();
-
-    await probe(container);
-    await pumpEventQueue();
-
-    expect(container.read(serverAddressesProvider)?.relay, relay);
-    expect(trust.isTrusted('abc.tunnel.jellybox.app', 443), isTrue);
-  });
-
-  test('- only takes tunnel addresses on the tunnel domain', () {
-    expect(isTunnelAddress(Uri.parse(relay), anyHost: false), isTrue);
-    expect(
-      isTunnelAddress(Uri.parse('https://evil.example/r/abc'), anyHost: false),
-      isFalse,
-    );
-    expect(
-      isTunnelAddress(
-        Uri.parse('http://abc.tunnel.jellybox.app'),
-        anyHost: false,
-      ),
-      isFalse,
-    );
-    expect(
-      isTunnelAddress(
-        Uri.parse('https://tunnel.jellybox.app.evil.example'),
-        anyHost: false,
-      ),
-      isFalse,
-    );
-  });
-
-  test(
-    '- falls back to the remote address when home does not answer',
-    () async {
-      hosts.status['100.64.0.5'] = 200;
-      final container = start(knownRemote: remote);
-
-      expect(await probe(container), isTrue);
-      expect(container.read(baseUrlProvider), remote);
-    },
-  );
-
-  test('- prefers the remote address over the tunnel', () async {
-    hosts.status['100.64.0.5'] = 200;
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRemote: remote, knownRelay: relay);
-
-    await probe(container);
-
     expect(container.read(baseUrlProvider), remote);
-    expect(container.read(relayReachableProvider), isTrue);
-  });
-
-  test('- takes the tunnel when the remote address is down too', () async {
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRemote: remote, knownRelay: relay);
-
-    await probe(container);
-
-    expect(container.read(baseUrlProvider), relay);
   });
 
   test('- tells a remote connection apart from a direct one', () async {
@@ -469,43 +335,6 @@ void main() {
     hosts.status['192.168.1.10'] = 200;
     await probe(container);
     expect(container.read(serverConnectionProvider), ServerConnection.direct);
-  });
-
-  test('- walks a failed request from home to remote to tunnel', () async {
-    hosts.status['192.168.1.10'] = 200;
-    hosts.status['100.64.0.5'] = 200;
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRemote: remote, knownRelay: relay);
-    await probe(container);
-    hosts.status.remove('192.168.1.10');
-
-    final viaRemote = await container
-        .read(dioProvider)
-        .getUri<void>(Uri.parse('$home/Items?limit=5'));
-    expect(viaRemote.realUri.toString(), '$remote/Items?limit=5');
-    expect(container.read(baseUrlProvider), remote);
-
-    await probe(container);
-    hosts.status.remove('100.64.0.5');
-    final viaTunnel = await container
-        .read(dioProvider)
-        .getUri<void>(Uri.parse('$home/Items?limit=5'));
-    expect(viaTunnel.realUri.toString(), '$relay/Items?limit=5');
-    expect(container.read(baseUrlProvider), relay);
-  });
-
-  test('- skips a fallback the last probe found down', () async {
-    hosts.status['192.168.1.10'] = 200;
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    final container = start(knownRemote: remote, knownRelay: relay);
-    await probe(container);
-    hosts.status.remove('192.168.1.10');
-
-    final response = await container
-        .read(dioProvider)
-        .getUri<void>(Uri.parse('$home/Items'));
-
-    expect(response.realUri.toString(), '$relay/Items');
   });
 
   test('- leaves the remote address alone when home answers', () async {
@@ -548,67 +377,30 @@ void main() {
     expect(container.read(serverAddressesProvider)?.remote, isNull);
   });
 
-  test('- remembers why this user was refused a seat', () async {
-    hosts.status['192.168.1.10'] = 200;
-    when(() => client.remoteAccess()).thenAnswer(
-      (_) async => const RemoteAccessResult(denied: 'plan_full'),
-    );
-    final container = start(knownRelay: relay);
-
-    await probe(container);
-    await pumpEventQueue();
-
-    final addresses = container.read(serverAddressesProvider);
-    expect(addresses?.relay, isNull);
-    expect(addresses?.relayDenied, 'plan_full');
-  });
-
-  test('- holds the plugin notice until it is dismissed', () async {
-    hosts.status['192.168.1.10'] = 200;
-    when(() => client.remoteAccess()).thenAnswer(
-      (_) async => const RemoteAccessResult(
-        denied: 'plan_full',
-        notice: PluginNotice.outdated,
-      ),
-    );
-    final container = start(knownRelay: relay);
-
-    await probe(container);
-    await pumpEventQueue();
-
-    expect(container.read(visiblePluginNoticeProvider), PluginNotice.outdated);
-    expect(container.read(serverAddressesProvider)?.relayDenied, 'plan_full');
-
-    container.read(dismissedPluginNoticeProvider.notifier).state =
-        PluginNotice.outdated;
-    expect(container.read(visiblePluginNoticeProvider), isNull);
-  });
-
   test(
     '- orders stream endpoints: selected, then up, then known down',
     () async {
       hosts.status['100.64.0.5'] = 200;
-      hosts.status['abc.tunnel.jellybox.app'] = 200;
-      final container = start(knownRelay: relay, knownRemote: remote);
+      final container = start(knownRemote: remote);
       await probe(container);
 
       expect(container.read(baseUrlProvider), remote);
       expect(
         container.read(connectivityProvider.notifier).liveEndpoints(),
-        [remote, relay, home],
+        [remote, home],
       );
     },
   );
 
   test('- adopts the endpoint a stream got through on', () async {
-    final container = start(knownRelay: relay);
+    final container = start(knownRemote: remote);
     expect(await probe(container), isFalse);
     expect(container.read(baseUrlProvider), home);
 
-    hosts.status['abc.tunnel.jellybox.app'] = 200;
-    container.read(connectivityProvider.notifier).adopt(relay);
+    hosts.status['100.64.0.5'] = 200;
+    container.read(connectivityProvider.notifier).adopt(remote);
 
-    expect(container.read(baseUrlProvider), relay);
+    expect(container.read(baseUrlProvider), remote);
     expect(container.read(connectivityProvider), isTrue);
   });
 

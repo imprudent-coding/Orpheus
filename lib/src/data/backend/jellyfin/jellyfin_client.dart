@@ -18,7 +18,6 @@ import 'package:jplayer/src/data/backend/mediabrowser_home.dart';
 import 'package:jplayer/src/data/backend/mediabrowser_query.dart';
 import 'package:jplayer/src/data/backend/playback_report.dart';
 import 'package:jplayer/src/data/backend/playlist_songs_batch.dart';
-import 'package:jplayer/src/data/backend/remote_access.dart';
 import 'package:jplayer/src/data/backend/stream_source.dart';
 import 'package:jplayer/src/data/dto/dto.dart';
 import 'package:jplayer/src/data/params/params.dart';
@@ -770,43 +769,6 @@ class JellyfinClient implements MediaServerClient {
     } on Object {
       return SessionStatus.unreachable;
     }
-  }
-
-  @override
-  Future<RemoteAccessResult?> remoteAccess() async {
-    try {
-      final response = await _dio.getUri<Map<String, dynamic>>(
-        _resolve('JellyboxRemote/Info', const {}),
-      );
-      final url = response.data?['Url'];
-      final fingerprint = response.data?['Fingerprint'];
-      final reason = response.data?['Reason'];
-      final access =
-          url is String &&
-              url.isNotEmpty &&
-              fingerprint is String &&
-              fingerprint.isNotEmpty
-          ? RemoteAccess(url: url, fingerprint: fingerprint.toLowerCase())
-          : null;
-      return RemoteAccessResult(
-        access: access,
-        denied: access == null && reason is String ? reason : null,
-        notice: _pluginNotice(response.data),
-      );
-    } on DioException catch (error) {
-      if (error.response?.statusCode == 404) return null;
-      rethrow;
-    }
-  }
-
-  PluginNotice? _pluginNotice(Map<String, dynamic>? info) {
-    if (info?['PluginVersion'] is! String) return PluginNotice.outdated;
-    final notice = info?['Notice'];
-    if (notice is! Map<String, dynamic>) return null;
-    final code = notice['Code'];
-    final message = notice['Message'];
-    if (code is! String || message is! String || message.isEmpty) return null;
-    return PluginNotice(code: code, message: message);
   }
 
   @override

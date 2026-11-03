@@ -34,7 +34,6 @@ export 'player_bar_provider.dart';
 export 'playlist_song_order_provider.dart';
 export 'playlist_songs_source.dart';
 export 'queue_sidebar_provider.dart';
-export 'review_prompt_provider.dart';
 export 'search_items_providers.dart';
 export 'sound_search_provider.dart';
 export 'set_playback_provider.dart';

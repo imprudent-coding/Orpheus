@@ -4,7 +4,6 @@ import 'package:jplayer/src/data/backend/library_query.dart';
 import 'package:jplayer/src/data/backend/media_server_capabilities.dart';
 import 'package:jplayer/src/data/backend/playback_report.dart';
 import 'package:jplayer/src/data/backend/playlist_songs_batch.dart';
-import 'package:jplayer/src/data/backend/remote_access.dart';
 import 'package:jplayer/src/data/backend/stream_source.dart';
 import 'package:jplayer/src/data/params/params.dart';
 import 'package:jplayer/src/domain/models/models.dart';
@@ -127,8 +126,6 @@ abstract class MediaServerClient {
   Future<void> reportPlaybackStopped(PlaybackReport report);
 
   Future<SessionStatus> validateSession();
-
-  Future<RemoteAccessResult?> remoteAccess();
 
   Future<void> signOut();
 }

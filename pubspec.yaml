@@ -19,7 +19,6 @@ dependencies:
   dropdown_button2: ^2.3.9
   flutter_svg: ^2.2.0
   flutter_svg_provider: ^1.0.7
-  sentry_flutter: ^9.6.0
   freezed_annotation: ^3.1.0
   mediakeys_proxy:
     path: ./mediakeys_proxy
@@ -77,7 +76,6 @@ dependencies:
   updatify_flutter: ^1.7.1
   optional_features:
     path: ./packages/optional_features
-  plausible: ^1.0.1
   connectivity_plus: ^7.3.1
   xml: ^6.6.1
   smtc_windows: ^1.1.0
@@ -87,7 +85,6 @@ dependencies:
   battery_plus: ^7.1.1
   url_launcher: ^6.3.2
   share_plus: ^13.3.1
-  in_app_review: ^2.0.12
   web_socket_channel: ^3.0.3
   flutter_volume_controller: ^2.0.2
   video_player: ^2.14.1

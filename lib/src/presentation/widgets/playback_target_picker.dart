@@ -20,16 +20,13 @@ import 'package:jplayer/src/domain/providers/cloud_provider.dart';
 import 'package:jplayer/src/domain/providers/output_route_provider.dart';
 import 'package:jplayer/src/domain/providers/upnp_renderers_provider.dart';
 import 'package:jplayer/src/presentation/utils/utils.dart';
-import 'package:jplayer/src/presentation/widgets/adaptive_dialog_action.dart';
 import 'package:jplayer/src/presentation/widgets/anchored_dropdown.dart';
 import 'package:jplayer/src/presentation/widgets/form_modal.dart';
 import 'package:jplayer/src/presentation/widgets/frosted_panel.dart';
 import 'package:jplayer/src/presentation/widgets/hover_icon_button.dart';
-import 'package:jplayer/src/presentation/widgets/jellybox_cloud_settings.dart';
 import 'package:jplayer/src/presentation/widgets/marquee_text.dart';
 import 'package:jplayer/src/presentation/widgets/volume_control.dart';
 import 'package:jplayer/src/providers/color_scheme_provider.dart';
-import 'package:jplayer/src/providers/diagnostics_provider.dart';
 import 'package:native_route_picker/native_route_picker.dart';
 import 'package:optional_features/upnp_quirks.dart';
 
@@ -337,12 +334,6 @@ class _PlaybackTargetMenuState extends ConsumerState<PlaybackTargetMenu> {
     widget.onDone();
   }
 
-  void _connectCloud() {
-    final navigator = Navigator.of(context, rootNavigator: true);
-    widget.onDone();
-    unawaited(connectJellyboxCloud(navigator.context));
-  }
-
   Future<void> _handOffTo(ConductorDevice device) async {
     setState(() => _failedHandoff = null);
     final taken = await _outputs.handOffTo(device);
@@ -397,24 +388,6 @@ class _PlaybackTargetMenuState extends ConsumerState<PlaybackTargetMenu> {
     unawaited(ref.read(upnpRenderersProvider.notifier).refresh());
   }
 
-  Future<void> _shareDevices(List<UpnpRenderer> renderers) async {
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    final diagnostics = ref.read(diagnosticsProvider);
-    final payload = deviceReportPayload(renderers);
-
-    widget.onDone();
-    final confirmed = await showAppDialog<bool>(
-      context,
-      builder: (context) => _ShareDevicesDialog(count: renderers.length),
-    );
-    if (confirmed != true) return;
-
-    await diagnostics.report(upnpDeviceReportMessage, data: payload);
-    messenger?.showSnackBar(
-      const SnackBar(content: Text('Device list sent. Thank you!')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -462,14 +435,6 @@ class _PlaybackTargetMenuState extends ConsumerState<PlaybackTargetMenu> {
                     icon: const Icon(Icons.refresh),
                     onPressed: _rescan,
                   ),
-                IconButton(
-                  tooltip: 'Share this device list with the developer',
-                  iconSize: 18,
-                  icon: const Icon(Icons.upload),
-                  onPressed: discovery.scanning || discovery.renderers.isEmpty
-                      ? null
-                      : () => _shareDevices(discovery.renderers),
-                ),
               ],
             ),
           ),
@@ -479,14 +444,6 @@ class _PlaybackTargetMenuState extends ConsumerState<PlaybackTargetMenu> {
               title: 'This device',
               selected: onThisDevice,
               onTap: _selectLocal,
-            ),
-          if (ref.watch(cloudAvailableProvider) && conductor.account == null)
-            _TargetTile(
-              icon: Icons.cloud_off_outlined,
-              title: 'Continuity not available',
-              subtitle: 'Tap to connect',
-              selected: false,
-              onTap: _connectCloud,
             ),
           for (final device in conductor.targets) ...[
             _TargetTile(
@@ -856,35 +813,4 @@ Map<String, Object?> _reportEntry(UpnpRenderer renderer) {
     'quirks': renderer.quirks.toJson(),
     'rules': rulesFor(fingerprint).map((rule) => rule.name).toList(),
   };
-}
-
-class _ShareDevicesDialog extends StatelessWidget {
-  const _ShareDevicesDialog({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) => AlertDialog.adaptive(
-    title: const Text('Share what JellyBox found?'),
-    content: Text(
-      count == 1
-          ? 'Send the details of the DLNA device on your network? It stays '
-                'private and is only used to build proper support for '
-                'different manufacturers.'
-          : 'Send the details of the $count DLNA devices on your network? It '
-                'stays private and is only used to build proper support for '
-                'different manufacturers.',
-    ),
-    actions: [
-      AdaptiveDialogAction(
-        onPressed: () => Navigator.pop(context, false),
-        child: const Text('Not now'),
-      ),
-      AdaptiveDialogAction(
-        onPressed: () => Navigator.pop(context, true),
-        isDefaultAction: true,
-        child: const Text('Share'),
-      ),
-    ],
-  );
 }

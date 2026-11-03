@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:in_app_review/in_app_review.dart';
 import 'package:jplayer/resources/j_player_icons.dart';
 import 'package:jplayer/src/config/constants.dart';
 import 'package:jplayer/src/config/routes.dart';
@@ -15,7 +13,6 @@ import 'package:jplayer/src/presentation/utils/utils.dart';
 import 'package:jplayer/src/presentation/widgets/widgets.dart';
 import 'package:jplayer/src/providers/auth_provider.dart';
 import 'package:jplayer/src/providers/connectivity_provider.dart';
-import 'package:jplayer/src/providers/server_addresses_provider.dart';
 import 'package:updatify_flutter/updatify_flutter.dart';
 
 class MainPage extends ConsumerStatefulWidget {
@@ -127,27 +124,12 @@ class _MainPageState extends ConsumerState<MainPage> {
     );
   }
 
-  Future<void> _requestReview() async {
-    final review = InAppReview.instance;
-    try {
-      if (!await review.isAvailable()) return;
-      await ref.read(reviewPromptProvider.notifier).markPrompted();
-      await review.requestReview();
-    } on PlatformException {
-      return;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    ref.listen<bool>(reviewPromptProvider, (_, due) {
-      if (due) unawaited(_requestReview());
-    });
     final currentIndex = widget.shell.currentIndex;
     final isOffline = ref.watch(isOfflineProvider);
-    final pluginNotice = ref.watch(visiblePluginNoticeProvider);
     final update = ref.watch(visibleUpdateProvider);
-    final hasBanner = isOffline || pluginNotice != null || update != null;
+    final hasBanner = isOffline || update != null;
     final sidebarCollapsed = ref.watch(
       settingProvider(AppSetting.sidebarCollapsed),
     );
@@ -217,8 +199,6 @@ class _MainPageState extends ConsumerState<MainPage> {
                   children: [
                     if (isOffline)
                       const OfflineBanner()
-                    else if (pluginNotice != null)
-                      PluginNoticeBanner(notice: pluginNotice)
                     else if (update != null)
                       UpdateBanner(update: update),
                     Expanded(

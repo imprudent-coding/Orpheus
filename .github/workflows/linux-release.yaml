@@ -88,11 +88,6 @@ jobs:
         with:
           channel: stable
 
-      - name: Private package
-        uses: ./.github/actions/optional-features
-        with:
-          deploy-key: ${{ secrets.OPTIONAL_FEATURES_DEPLOY_KEY }}
-
       # flutter-action installs from releases_linux.json, which only ever
       # contains x64 archives — there is no Linux arm64 Flutter SDK tarball to
       # download. The engine *does* publish linux-arm64 artifacts, so on arm we

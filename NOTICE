@@ -27,3 +27,12 @@ Summary of changes in this fork
   Kotlin namespace and internal class names are unchanged.
 - Support links point at the fork's issue tracker instead of the JellyBox
   developer's email and Discord.
+- Removed the JellyBox cloud relay (the server-plugin tunnel and its
+  automatic fallback), the JellyBox cloud continuity wiring and UI
+  (handoff, remote control; the inert open-source stub types remain so the
+  rest of the app compiles unchanged), and the CI step that pulled the
+  private optional_features package.
+- Removed Sentry crash reporting and Plausible analytics, including the
+  opt-out setting and the "share device list with the developer" button.
+- Removed the in-app store review prompt (in_app_review).
+- Disabled Discord Rich Presence (it used the JellyBox Discord application).
