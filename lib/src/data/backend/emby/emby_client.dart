@@ -19,7 +19,6 @@ import 'package:jplayer/src/data/backend/mediabrowser_home.dart';
 import 'package:jplayer/src/data/backend/mediabrowser_query.dart';
 import 'package:jplayer/src/data/backend/playback_report.dart';
 import 'package:jplayer/src/data/backend/playlist_songs_batch.dart';
-import 'package:jplayer/src/data/backend/remote_access.dart';
 import 'package:jplayer/src/data/backend/stream_source.dart';
 import 'package:jplayer/src/data/dto/dto.dart';
 import 'package:jplayer/src/data/params/params.dart';
@@ -646,9 +645,6 @@ class EmbyClient implements MediaServerClient {
       return SessionStatus.unreachable;
     }
   }
-
-  @override
-  Future<RemoteAccessResult?> remoteAccess() async => null;
 
   @override
   Future<void> signOut() async {

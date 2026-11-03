@@ -73,11 +73,6 @@ jobs:
         with:
           channel: stable
 
-      - name: Private package
-        uses: ./.github/actions/optional-features
-        with:
-          deploy-key: ${{ secrets.OPTIONAL_FEATURES_DEPLOY_KEY }}
-
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"

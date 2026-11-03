@@ -13,12 +13,19 @@ jobs:
       - name: Check the tree builds without the private package
         run: ./tool/check_public_pubspec.sh
 
-      - name: Private package
-        uses: ./.github/actions/optional-features
-        with:
-          deploy-key: ${{ secrets.OPTIONAL_FEATURES_DEPLOY_KEY }}
+      # ORPHEUS: the fork must not reintroduce the JellyBox cloud/relay.
+      - name: No jellybox.app references
+        run: ./tool/check_no_jellybox_app.sh
 
-      - name: App tests against the real package
+      - name: Get packages
+        run: flutter pub get
+
+      # ORPHEUS: upstream carries several hundred lint infos/warnings, so only
+      # analyzer errors fail this step.
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings lib test
+
+      - name: App tests
         run: flutter test
 
       - name: optional_features package tests

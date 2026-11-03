@@ -63,11 +63,6 @@ jobs:
         with:
           channel: stable
 
-      - name: Private package
-        uses: ./.github/actions/optional-features
-        with:
-          deploy-key: ${{ secrets.OPTIONAL_FEATURES_DEPLOY_KEY }}
-
       # smtc_windows compiles a Rust crate through cargokit, which only ever
       # looks for an existing rustup on PATH or in ~/.cargo/bin and fails the
       # build rather than bootstrapping one. windows-latest happens to ship

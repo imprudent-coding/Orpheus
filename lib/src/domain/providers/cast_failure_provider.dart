@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 class CastFailure {
   const CastFailure({
@@ -30,7 +29,8 @@ class CastFailureNotifier extends Notifier<CastFailure?> {
   void report(String deviceName, {bool takenOver = false}) =>
       state = CastFailure(
         deviceName: deviceName,
-        reported: !takenOver && Sentry.isEnabled,
+        // ORPHEUS: no crash reporting, so nothing is ever submitted.
+        reported: false,
         takenOver: takenOver,
       );
 

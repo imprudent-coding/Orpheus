@@ -13,8 +13,16 @@ import 'package:jplayer/src/domain/providers/playback_provider.dart';
 import 'package:just_audio_background/just_audio_background.dart'
     show MediaItem;
 
+// ORPHEUS: Rich Presence is off. discordApplicationId belongs to upstream's
+// Discord application (it would show "JellyBox"). To turn it back on, register
+// your own Discord application, put its ID in discordApplicationId and build
+// with --dart-define=ORPHEUS_DISCORD_PRESENCE=true.
+const _discordPresenceEnabled = bool.fromEnvironment(
+  'ORPHEUS_DISCORD_PRESENCE',
+);
+
 bool get supportsDiscordPresence {
-  if (kIsWeb) return false;
+  if (kIsWeb || !_discordPresenceEnabled) return false;
   if (Platform.isMacOS) return kDirectDownloadBuild;
   return Platform.isWindows || Platform.isLinux;
 }

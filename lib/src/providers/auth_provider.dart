@@ -120,11 +120,9 @@ class AuthNotifier extends AsyncNotifier<bool?> {
     if (serverUrl == null) return false;
     await _rememberServerUrl(serverUrl);
     final remoteUrl = await _storage.read(key: remoteUrlStorageKey);
-    final relayUrl = await _storage.read(key: relayUrlStorageKey);
     ref.read(serverAddressesProvider.notifier).state = ServerAddresses(
       home: serverUrl,
       remote: remoteUrl,
-      relay: relayUrl,
     );
 
     final serverType = _parseServerType(
@@ -138,7 +136,7 @@ class AuthNotifier extends AsyncNotifier<bool?> {
     await _pruneAbandonedDownloads();
     final token = await _migrateAuthToken();
     final (activeUrl, status) = await _validateFirst(
-      [serverUrl, ?remoteUrl, ?relayUrl],
+      [serverUrl, ?remoteUrl],
       serverType,
       userId: userId,
       token: token,
@@ -256,7 +254,6 @@ class AuthNotifier extends AsyncNotifier<bool?> {
       serverName: identity?.name ?? existing?.serverName,
       productName: identity?.productName ?? existing?.productName,
       remoteUrl: existing?.remoteUrl,
-      relayUrl: existing?.relayUrl,
       libraryId: existing?.libraryId,
       libraryPath: existing?.libraryPath,
       libraryName: existing?.libraryName,
@@ -283,7 +280,6 @@ class AuthNotifier extends AsyncNotifier<bool?> {
     ref.read(serverAddressesProvider.notifier).state = ServerAddresses(
       home: serverUrl,
       remote: account.remoteUrl,
-      relay: account.relayUrl,
     );
     ref.read(baseUrlProvider.notifier).state = serverUrl;
     ref.read(currentServerTypeProvider.notifier).state = serverType;
@@ -724,7 +720,6 @@ class AuthNotifier extends AsyncNotifier<bool?> {
         serverName: existing?.serverName,
         productName: existing?.productName,
         remoteUrl: await _storage.read(key: remoteUrlStorageKey),
-        relayUrl: await _storage.read(key: relayUrlStorageKey),
         libraryId: prefs.getString(CurrentLibraryNotifier.libraryIdStorageKey),
         libraryPath: prefs.getString(
           CurrentLibraryNotifier.libraryPathStorageKey,
@@ -745,7 +740,6 @@ class AuthNotifier extends AsyncNotifier<bool?> {
     await _storage.write(key: _serverIdKey, value: account.serverId);
     await _storage.write(key: _serverTypeKey, value: account.serverType.name);
     await _writeOrDelete(remoteUrlStorageKey, account.remoteUrl);
-    await _writeOrDelete(relayUrlStorageKey, account.relayUrl);
     await _rememberServerUrl(account.url);
     await _applyLibrary(account);
   }
@@ -759,7 +753,6 @@ class AuthNotifier extends AsyncNotifier<bool?> {
       _serverIdKey,
       _serverTypeKey,
       remoteUrlStorageKey,
-      relayUrlStorageKey,
     ]) {
       await _storage.delete(key: key);
     }

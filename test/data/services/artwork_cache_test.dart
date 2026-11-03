@@ -3,7 +3,7 @@ import 'package:jplayer/src/data/services/artwork_cache.dart';
 
 void main() {
   const home = 'http://jellyfin.home';
-  const relay = 'https://cloud.jellybox.app/r/key';
+  const relay = 'https://remote.example.net/r/key';
   const cover = '/Items/a1/Images/Primary?fillWidth=420&tag=t';
 
   const onRelay = ArtworkRoute(addresses: [home, relay], active: relay);

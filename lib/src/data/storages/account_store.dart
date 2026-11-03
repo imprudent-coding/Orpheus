@@ -18,7 +18,6 @@ class ServerAccount {
     this.serverName,
     this.productName,
     this.remoteUrl,
-    this.relayUrl,
     this.libraryId,
     this.libraryPath,
     this.libraryName,
@@ -38,7 +37,6 @@ class ServerAccount {
     serverName: json['serverName'] as String?,
     productName: json['productName'] as String?,
     remoteUrl: json['remoteUrl'] as String?,
-    relayUrl: json['relayUrl'] as String?,
     libraryId: json['libraryId'] as String?,
     libraryPath: json['libraryPath'] as String?,
     libraryName: json['libraryName'] as String?,
@@ -58,7 +56,6 @@ class ServerAccount {
   final String? serverName;
   final String? productName;
   final String? remoteUrl;
-  final String? relayUrl;
   final String? libraryId;
   final String? libraryPath;
   final String? libraryName;
@@ -80,7 +77,6 @@ class ServerAccount {
     String? Function()? serverName,
     String? Function()? productName,
     String? Function()? remoteUrl,
-    String? Function()? relayUrl,
     String? Function()? libraryId,
     String? Function()? libraryPath,
     String? Function()? libraryName,
@@ -96,7 +92,6 @@ class ServerAccount {
     serverName: serverName == null ? this.serverName : serverName(),
     productName: productName == null ? this.productName : productName(),
     remoteUrl: remoteUrl == null ? this.remoteUrl : remoteUrl(),
-    relayUrl: relayUrl == null ? this.relayUrl : relayUrl(),
     libraryId: libraryId == null ? this.libraryId : libraryId(),
     libraryPath: libraryPath == null ? this.libraryPath : libraryPath(),
     libraryName: libraryName == null ? this.libraryName : libraryName(),
@@ -114,7 +109,6 @@ class ServerAccount {
     'serverName': ?serverName,
     'productName': ?productName,
     'remoteUrl': ?remoteUrl,
-    'relayUrl': ?relayUrl,
     'libraryId': ?libraryId,
     'libraryPath': ?libraryPath,
     'libraryName': ?libraryName,

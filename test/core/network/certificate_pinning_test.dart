@@ -62,7 +62,7 @@ void main() {
   test('a websocket URL without a port connects on the default port', () {
     expect(
       TrustedCertificateHttpOverrides.portOf(
-        Uri(scheme: 'https', host: 'cloud.jellybox.app', port: 0),
+        Uri(scheme: 'https', host: 'remote.example.net', port: 0),
       ),
       443,
     );

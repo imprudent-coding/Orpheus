@@ -278,7 +278,6 @@ void main() {
       final stored = {
         'serverUrl': 'http://jelly.local',
         'remoteUrl': 'http://100.64.0.5:8096',
-        'relayUrl': 'https://relay.test/r/key',
         'userId': 'user-1',
         'authToken': 'token-1',
         'serverId': 'server-1',
@@ -343,19 +342,6 @@ void main() {
       );
 
       expect(container.read(baseUrlProvider), 'http://100.64.0.5:8096');
-    });
-
-    test('- starts on the tunnel when only the tunnel answers', () async {
-      final container = await restoreWith(
-        answer: (uri) async => uri.host == 'relay.test'
-            ? artists()
-            : throw DioException.connectionError(
-                requestOptions: RequestOptions(path: uri.toString()),
-                reason: 'unreachable',
-              ),
-      );
-
-      expect(container.read(baseUrlProvider), 'https://relay.test/r/key');
     });
 
     test(

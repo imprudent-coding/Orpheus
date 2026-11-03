@@ -10,7 +10,6 @@ import 'package:jplayer/src/data/backend/letter_index.dart';
 import 'package:jplayer/src/data/backend/library_query.dart';
 import 'package:jplayer/src/data/backend/jellyfin/jellyfin_client.dart';
 import 'package:jplayer/src/data/backend/mappers/item_dto_mapper.dart';
-import 'package:jplayer/src/data/backend/remote_access.dart';
 import 'package:jplayer/src/data/backend/stream_source.dart';
 import 'package:jplayer/src/data/dto/dto.dart';
 import 'package:jplayer/src/domain/models/models.dart';
@@ -1045,131 +1044,6 @@ void main() {
         isNull,
       );
       expect(requests, isEmpty);
-    });
-  });
-
-  group('remoteAccess', () {
-    late MockHttpClientAdapter adapter;
-    late JellyfinClient remoteClient;
-
-    setUp(() {
-      adapter = MockHttpClientAdapter();
-      remoteClient = JellyfinClient(
-        dio: Dio()..httpClientAdapter = adapter,
-        baseUrl: 'http://jelly.local:8096/jf',
-        userId: 'user-1',
-        token: 'token-1',
-        deviceId: 'device-1',
-      );
-    });
-
-    void respond(int status, Object body) {
-      when(() => adapter.fetch(any(), any(), any())).thenAnswer(
-        (_) async => ResponseBody.fromString(
-          jsonEncode(body),
-          status,
-          headers: {
-            Headers.contentTypeHeader: [Headers.jsonContentType],
-          },
-        ),
-      );
-    }
-
-    test('- reads the address the plugin publishes', () async {
-      respond(200, {
-        'Url': 'https://abc.tunnel.jellybox.app',
-        'Fingerprint': 'AB12',
-        'Connected': true,
-        'PluginVersion': '0.12.0.0',
-      });
-
-      expect(
-        await remoteClient.remoteAccess(),
-        const RemoteAccessResult(
-          access: RemoteAccess(
-            url: 'https://abc.tunnel.jellybox.app',
-            fingerprint: 'ab12',
-          ),
-        ),
-      );
-      final request =
-          verify(
-                () => adapter.fetch(captureAny(), any(), any()),
-              ).captured.single
-              as RequestOptions;
-      expect(request.uri.path, '/jf/JellyboxRemote/Info');
-    });
-
-    test(
-      '- does not mistake a network failure for having no address',
-      () async {
-        when(() => adapter.fetch(any(), any(), any())).thenThrow(
-          DioException.connectionError(
-            requestOptions: RequestOptions(path: '/'),
-            reason: 'unreachable',
-          ),
-        );
-
-        await expectLater(
-          remoteClient.remoteAccess(),
-          throwsA(isA<DioException>()),
-        );
-      },
-    );
-
-    test('- has no address without a fingerprint to pin', () async {
-      respond(200, {'Url': 'https://abc.tunnel.jellybox.app'});
-
-      expect((await remoteClient.remoteAccess())?.access, isNull);
-    });
-
-    test('- carries the reason when this user gets no seat', () async {
-      respond(200, {
-        'Url': null,
-        'Fingerprint': 'ab12',
-        'Reason': 'plan_full',
-        'PluginVersion': '0.12.0.0',
-      });
-
-      expect(
-        await remoteClient.remoteAccess(),
-        const RemoteAccessResult(denied: 'plan_full'),
-      );
-    });
-
-    test('- passes on what the relay told the plugin', () async {
-      respond(200, {
-        'Url': null,
-        'PluginVersion': '0.12.0.0',
-        'Notice': {
-          'Code': 'update_available',
-          'Level': 'warning',
-          'Message': 'Update the plugin.',
-        },
-      });
-
-      expect(
-        (await remoteClient.remoteAccess())?.notice,
-        const PluginNotice(
-          code: 'update_available',
-          message: 'Update the plugin.',
-        ),
-      );
-    });
-
-    test('- takes a plugin that reports no version for outdated', () async {
-      respond(200, {'Url': null, 'Fingerprint': 'ab12'});
-
-      expect(
-        (await remoteClient.remoteAccess())?.notice,
-        PluginNotice.outdated,
-      );
-    });
-
-    test('- is null on a server without the plugin', () async {
-      respond(404, {'error': 'not found'});
-
-      expect(await remoteClient.remoteAccess(), isNull);
     });
   });
 

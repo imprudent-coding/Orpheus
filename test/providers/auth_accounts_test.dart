@@ -75,7 +75,7 @@ const accountB = ServerAccount(
   userName: 'bea',
   libraryId: 'lib-b',
   libraryName: 'B music',
-  relayUrl: 'https://b.tunnel.jellybox.app',
+  remoteUrl: 'http://b.remote',
 );
 
 Map<String, String> signedInTo(
@@ -245,10 +245,7 @@ void main() {
       expect(container.read(currentServerIdProvider), 'B');
       expect(await storage.read(key: 'authToken'), 'token-b');
       expect(await storage.read(key: 'serverUrl'), 'http://b.local');
-      expect(
-        await storage.read(key: 'relayUrl'),
-        'https://b.tunnel.jellybox.app',
-      );
+      expect(await storage.read(key: 'remoteUrl'), 'http://b.remote');
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('library_id'), 'lib-b');
       expect(prefs.getString('pb_songs.A'), '[]');
@@ -468,11 +465,11 @@ void main() {
     });
 
     test(
-      '- keeps the session when the token still works on the tunnel',
+      '- keeps the session when the token still works on the remote address',
       () async {
         final container = await start({
           ...signedInTo(accountA, accounts: [accountA]),
-          'relayUrl': 'https://a.tunnel.jellybox.app',
+          'remoteUrl': 'http://a.remote',
         });
         hostStatus['a.local'] = 403;
 
@@ -489,11 +486,11 @@ void main() {
     );
 
     test(
-      '- signs out when the tunnel rejects the token as well',
+      '- signs out when the remote address rejects the token as well',
       () async {
         final container = await start({
           ...signedInTo(accountA, accounts: [accountA]),
-          'relayUrl': 'https://a.tunnel.jellybox.app',
+          'remoteUrl': 'http://a.remote',
         });
         status = 401;
 

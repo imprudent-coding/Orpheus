@@ -16,10 +16,4 @@ const bool kSideloadBuild = bool.fromEnvironment('JELLYBOX_SIDELOAD');
 
 const String discordApplicationId = '1547587702344388712';
 
-const String jellyboxCloudUrl = 'https://cloud.jellybox.app';
-const String jellyfinRelayPluginUrl =
-    'https://github.com/JellyBoxPlayer/jellyfin-relay';
-
-const String jellyboxTunnelDomain = 'tunnel.jellybox.app';
-
 const int connectionsPerHost = 6;

@@ -23,7 +23,6 @@ import 'package:jplayer/src/domain/providers/app_settings_provider.dart';
 import 'package:jplayer/src/domain/providers/cast_failure_provider.dart';
 import 'package:jplayer/src/domain/playback/playback_target_provider.dart';
 import 'package:jplayer/src/domain/providers/pending_media_play_provider.dart';
-import 'package:jplayer/src/domain/providers/review_prompt_provider.dart';
 import 'package:jplayer/src/domain/providers/stream_preference_provider.dart';
 import 'package:jplayer/src/domain/providers/volume_provider.dart';
 import 'package:jplayer/src/providers/base_url_provider.dart';
@@ -605,19 +604,11 @@ class PlaybackNotifier extends StateNotifier<PlaybackState> {
     final song = _reportedSong;
     if (song == null) return;
     _startReported = false;
-    if (_listenedThrough(song)) {
-      _ref.read(reviewPromptProvider.notifier).recordTrackCompleted();
-    }
     _report(
       (client) => client.reportPlaybackStopped(
         _playbackReport(song, positionMs: _reportedPositionMs),
       ),
     );
-  }
-
-  bool _listenedThrough(LibraryItem song) {
-    final total = song.duration.inMilliseconds;
-    return total > 0 && _reportedPositionMs >= total * 0.9;
   }
 
   void _reportProgress() {
