@@ -242,6 +242,20 @@ class _FileRow extends StatelessWidget {
   }
 }
 
+/// [date] as "Nov 3, 2027" in the app's locale, or in en_US when that
+/// locale has no date data loaded. intl only bundles en_US date symbols until
+/// initializeDateFormatting() runs, which the app never calls, so a plain
+/// DateFormat.yMMMd() throws for the app's "en" locale.
+String formatCertificateDate(DateTime date) {
+  final local = date.toLocal();
+  try {
+    return DateFormat.yMMMd().format(local);
+  } on Exception {
+    // LocaleDataException, which intl does not export.
+    return DateFormat.yMMMd('en_US').format(local);
+  }
+}
+
 /// Subject CN, issuer and expiry, with a warning when the certificate has
 /// expired or expires within 30 days.
 class CertificateDetailsView extends StatelessWidget {
@@ -258,7 +272,7 @@ class CertificateDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onPrimary.withValues(alpha: 0.7);
-    final date = DateFormat.yMMMd().format(details.validTo.toLocal());
+    final date = formatCertificateDate(details.validTo);
     final warning = details.isExpired
         ? 'This certificate expired on $date. The server will refuse it.'
         : details.expiresSoon
